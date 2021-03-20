@@ -1,0 +1,716 @@
+<HTML>
+<HEAD>
+<TITLE>Logic (Subsystem of AIMA Code)</TITLE> 
+<META http-equiv="Content-Type" content="text/html">
+<META http-equiv="Content-Style-Type" content="text/css">
+<link href="overview.css" rel="stylesheet" type="text/css">
+</HEAD> 
+<BODY bgcolor="#ffffff"> 
+
+<H1>Logic (Subsystem of AIMA Code)</H1>
+
+The <b>logic</b> system covers part III of the book.  We define
+knowledge bases, and <tt>tell</tt> and <tt>ask</tt> operations on
+those knowledge bases.  The interface is defined in the file <A
+HREF="http://aima.cs.berkeley.edu/lisp/doc/overview-LOGIC.html#logic/algorithms/tell-ask.lisp">tell-ask.lisp</A>.
+
+<P>
+We need a new language for logical expressions,
+since we don't have all the nice characters (like upside-down A) that
+we would like to use.  We will allow an infix format for input, and
+manipulate a Lisp-like prefix format internally.  Here is a
+description of the formats (compare to [p 167, 187]). The prefix
+notation is a subset of the <A
+href="http://logic.stanford.edu/kif/Hypertext/kif-manual.html">KIF
+3.0</A> Knowledge Interchange Format.
+
+<pre>
+Infix         Prefix             Meaning              Alternate Infix Notation
+==========    ======             ===========          ========================
+~P            (not P)            negation             not P    
+P ^ Q         (and P Q)          conjunction          P and Q  
+P | Q         (or P Q)           disjunction          P or Q   
+P => Q        (=> P Q)           implication                   
+P <=> Q       (<=> P Q)          logical equivalence
+P(x)          (P x)              predicate   
+Q(x,y)        (Q x y)            predicate with multiple arguments
+f(x)          (f x)              function    
+f(x)=3        (= (f x) 3)        equality    
+forall(x,P(x) (forall (x) (P x)) universal quantification
+exists(x,P(x) (exists (x) (P x)) existential quantification
+[a,b]         (listof a b)       list of elements
+{a,b}         (setof a b)        mathematical set of elements
+true          true               the true logical constant
+false         false              the false logical constant
+</pre>
+
+You can also use the usual operators for mathematical notation: +, -,
+*, / for arithmetic, and &;lt;, &gt;, &lt;=, &gt;= for comparison.
+Many of the functions we define also accept strings as input,
+interpreting them as infix expressions, so the following are
+equivalent:
+
+<pre>
+	(tell kb "P=>Q")  
+        (tell kb '(=> P Q))
+</pre>
+
+<P><HR size=3><LI><A HREF="#FOL\infix.cl"><B>infix.cl</B></A>  Infix to prefix conversion on logic expression<LI><A HREF="#FOL\unify.cl"><B>unify.cl</B></A>  Unification and Substitutions (aka Binding Lists)<LI><A HREF="#FOL\normal.cl"><B>normal.cl</B></A>  Convert Expressions to Normal Form (Conjunctive, Implicative or Horn)<LI><A HREF="#FOL\fol.cl"><B>fol.cl</B></A>  First Order Logic (FOL) Tell, Retract, and Ask-Each</UL>
+
+<A NAME="FOL\infix.cl"><HR>
+<H2>File <A HREF="../FOL\infix.cl">FOL\infix.cl</A></H2></A>
+<H2> Infix to prefix conversion on logic expression
+</H2>
+ This file is copied from AIMA logic infix.lisp by Seiji
+<H2> Infix to Prefix Conversion
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*infix-ops*"><A HREF="../FOL\infix.cl"><B>*infix-ops*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A list of lists of operators, highest precedence first.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="->prefix"><A HREF="../FOL\infix.cl"><B>->prefix</B></A></A> (<I>infix</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert an infix expression <I>infix</I> to prefix expression.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="reduce-infix"><A HREF="../FOL\infix.cl"><B>reduce-infix</B></A></A> (<I>infix</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Find the highest-precedence operator in <I>infix</I> and reduce accordingly.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="op-token"><A HREF="../FOL\infix.cl"><B>op-token</B></A></A> (<I>op</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="op-name"><A HREF="../FOL\infix.cl"><B>op-name</B></A></A> (<I>op</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="op-type"><A HREF="../FOL\infix.cl"><B>op-type</B></A></A> (<I>op</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="op-match"><A HREF="../FOL\infix.cl"><B>op-match</B></A></A> (<I>op</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="replace-subseq"><A HREF="../FOL\infix.cl"><B>replace-subseq</B></A></A> (<I>sequence</I> <I>start</I> <I>length</I> <I>new</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>inserts <I>new</I> into <I>sequence</I> after <I>start</I> if <I>length</I> = 0, 
+   otherwise replace <I>length</I> items with <I>new</I> in <I>sequence</I> after <I>start</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="reduce-matching-op"><A HREF="../FOL\infix.cl"><B>reduce-matching-op</B></A></A> (<I>op</I> <I>pos</I> <I>infix</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Find the matching op (paren or bracket) and reduce.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="remove-commas"><A HREF="../FOL\infix.cl"><B>remove-commas</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert (|,| a b) to (a b).</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="handle-quantifiers"><A HREF="../FOL\infix.cl"><B>handle-quantifiers</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Change (forall x y P) to (forall (x y) P).</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Tokenization: convert a string to a sequence of tokens
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="string->infix"><A HREF="../FOL\infix.cl"><B>string->infix</B></A></A> (<I>string</I> <I>&optional</I> <I>start</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert a <I>string</I> to a list of tokens.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="parse-infix-token"><A HREF="../FOL\infix.cl"><B>parse-infix-token</B></A></A> (<I>string</I> <I>start</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return the first token in <I>string</I> and the position after it, or nil.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="parse-span"><A HREF="../FOL\infix.cl"><B>parse-span</B></A></A> (<I>string</I> <I>pred</I> <I>i</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="make-logic-symbol"><A HREF="../FOL\infix.cl"><B>make-logic-symbol</B></A></A> (<I>string</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert <I>string</I> to symbol, preserving case, except for AND/OR/NOT/FORALL/EXISTS.
+   one-letter string is a variable, otherwise constant.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator-char?"><A HREF="../FOL\infix.cl"><B>operator-char?</B></A></A> (<I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>'<B>=</B>&^|*/,' are reserved characters.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="symbol-char?"><A HREF="../FOL\infix.cl"><B>symbol-char?</B></A></A> (<I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>alphanumeric and any character of '$!?%_:' may be a symbol</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="function-symbol?"><A HREF="../FOL\infix.cl"><B>function-symbol?</B></A></A> (<I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A symbol of which the first character is alphanumeric may be a function symbol.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="whitespace?"><A HREF="../FOL\infix.cl"><B>whitespace?</B></A></A> (<I>ch</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<A NAME="FOL\unify.cl"><HR>
+<H2>File <A HREF="../FOL\unify.cl">FOL\unify.cl</A></H2></A>
+<H2> Unification and Substitutions (aka Binding Lists)
+</H2>
+ Most of this code is borrowed from "Paradigms of AI Programming: Case Studies
+ in Common Lisp", by Peter Norvig, published by Morgan Kaufmann, 1992.
+ The complete code from that book is available for ftp at mkp.com in
+ the directory "pub/Norvig".  Note that it uses the term "bindings"
+ rather than "substitution" or "theta".  The meaning is the same.
+<P>
+ However, <B>get-mgu</B> and <B>get-disagreement-set</B> are programed by Seiji Koide.
+ All rights on these programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<H2> Constants
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="+fail+"><A HREF="../FOL\unify.cl"><B>+fail+</B></A></A> ()</U></TD>
+<TD width="70" align="right">[constant]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Indicates unification failure</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="+no-bindings+"><A HREF="../FOL\unify.cl"><B>+no-bindings+</B></A></A> ()</U></TD>
+<TD width="70" align="right">[constant]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Indicates unification success, with no variables.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Most General Unifier
+</H2>
+<P>
+ <B>get-mgu</B> computes MGU from a set of clauses. This function is more useful than <B>unify</B>, which computes 
+ a substitution from two arguments. 
+<BR>
+ This algorithm is by Nagao and Fuchi published from Iwanami.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="get-mgu"><A HREF="../FOL\unify.cl"><B>get-mgu</B></A></A> (<I>clauses</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="get-disagreement-set"><A HREF="../FOL\unify.cl"><B>get-disagreement-set</B></A></A> (<I>literals</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+<H2> Unifier from AIMA
+</H2>
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unify"><A HREF="../FOL\unify.cl"><B>unify</B></A></A> (<I>x</I> <I>y</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>See if x and y match with given bindings.  If they do,
+  return a binding list that would make them equal [p 303].</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?"><A HREF="../FOL\unify.cl"><B>compound-unify?</B></A></A> (<I>exp1</I> <I>exp2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Is this expression unifiable?</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:t"><A HREF="../FOL\unify.cl"><B>compound-unify?</B></A></A> (<I>exp1</I> <I>exp2</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify"><A HREF="../FOL\unify.cl"><B>compound-unify</B></A></A> (<I>exp1</I> <I>exp2</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>unify compounds</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="tcompound-unify"><A HREF="../FOL\unify.cl"><B>tcompound-unify</B></A></A> (<I>exp1</I> <I>exp2</I> <I>bindings</I> <I>env</I> <I>tbindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>unify compounds</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="rename-variables"><A HREF="../FOL\unify.cl"><B>rename-variables</B></A></A> (<I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Replace all variables in x with new ones.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Auxiliary Functions
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unify-var"><A HREF="../FOL\unify.cl"><B>unify-var</B></A></A> (<I>var</I> <I>x</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Unify var with x, using (and maybe extending) bindings [p 303].</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="violate-una?"><A HREF="../FOL\unify.cl"><B>violate-una?</B></A></A> (<I>var</I> <I>x</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variable?"><A HREF="../FOL\unify.cl"><B>variable?</B></A></A> (<I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Is x a variable (a symbol starting with $ or ?)?</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="get-binding"><A HREF="../FOL\unify.cl"><B>get-binding</B></A></A> (<I>var</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Find a (variable . value) pair in a binding list.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="binding-var"><A HREF="../FOL\unify.cl"><B>binding-var</B></A></A> (<I>binding</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Get the variable part of a single binding.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="binding-val"><A HREF="../FOL\unify.cl"><B>binding-val</B></A></A> (<I>binding</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Get the value part of a single binding.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="make-binding"><A HREF="../FOL\unify.cl"><B>make-binding</B></A></A> (<I>var</I> <I>val</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="lookup"><A HREF="../FOL\unify.cl"><B>lookup</B></A></A> (<I>var</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Get the value part (for var) from a binding list.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="extend-bindings"><A HREF="../FOL\unify.cl"><B>extend-bindings</B></A></A> (<I>var</I> <I>val</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Add a (var . value) pair to a binding list.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="occurs-in?"><A HREF="../FOL\unify.cl"><B>occurs-in?</B></A></A> (<I>var</I> <I>x</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Does var occur anywhere inside x?</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../FOL\unify.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>x</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Substitute the value of variables in bindings into x,
+  taking recursively bound variables into account.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings*"><A HREF="../FOL\unify.cl"><B>subst-bindings*</B></A></A> (<I>bindings</I> <I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>subst-bindings as side effects.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unifier"><A HREF="../FOL\unify.cl"><B>unifier</B></A></A> (<I>x</I> <I>y</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return something that unifies with both x and y (or fail).</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variables-in:t"><A HREF="../FOL\unify.cl"><B>variables-in</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variables-in:cons"><A HREF="../FOL\unify.cl"><B>variables-in</B></A></A> (<I>(exp
+                                                                                                  cons)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return a list of all the variables in EXP.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unique-find-anywhere-if"><A HREF="../FOL\unify.cl"><B>unique-find-anywhere-if</B></A></A> (<I>predicate</I> <I>tree</I> <I>&optional</I> <I>found-so-far</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return a list of leaves of tree satisfying predicate,
+  with duplicates removed.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="find-anywhere-if"><A HREF="../FOL\unify.cl"><B>find-anywhere-if</B></A></A> (<I>predicate</I> <I>tree</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Does predicate apply to any atom in the tree?</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*new-variable-counter*"><A HREF="../FOL\unify.cl"><B>*new-variable-counter*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="new-variable"><A HREF="../FOL\unify.cl"><B>new-variable</B></A></A> (<I>var</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Create a new variable.  Assumes user never types variables of form $X.9</TD>
+</TR></TBODY></TABLE></DIV> 
+<A NAME="FOL\normal.cl"><HR>
+<H2>File <A HREF="../FOL\normal.cl">FOL\normal.cl</A></H2></A>
+ This file is copied from AIMA logic normal.lisp by Seiji
+<P>
+<H2> Convert Expressions to Normal Form (Conjunctive, Implicative or Horn)
+</H2>
+ This could be done much more efficiently by using a special
+ representation for CNF, which eliminates the explicit ANDs
+ and ORs.  This code is meant to be informative, not efficient.
+<H2> Top-Level Functions
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="->cnf"><A HREF="../FOL\normal.cl"><B>->cnf</B></A></A> (<I>p</I> <I>&optional</I> <I>vars</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert a sentence p to conjunctive normal form [p 279-280].</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="->inf"><A HREF="../FOL\normal.cl"><B>->inf</B></A></A> (<I>p</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert a sentence p to implicative normal form [p 282].</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="->horn"><A HREF="../FOL\normal.cl"><B>->horn</B></A></A> (<I>p</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Try to convert sentence to a Horn clause, or a conjunction of Horn clauses.
+  Signal an error if this cannot be done.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="logic"><A HREF="../FOL\normal.cl"><B>logic</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Canonicalize a sentence into proper logical form.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Auxiliary Functions
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="cnf1->inf1"><A HREF="../FOL\normal.cl"><B>cnf1->inf1</B></A></A> (<I>p</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="eliminate-implications"><A HREF="../FOL\normal.cl"><B>eliminate-implications</B></A></A> (<I>p</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="move-not-inwards"><A HREF="../FOL\normal.cl"><B>move-not-inwards</B></A></A> (<I>p</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Given P, return ~P, but with the negation moved as far in as possible.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="merge-disjuncts"><A HREF="../FOL\normal.cl"><B>merge-disjuncts</B></A></A> (<I>disjuncts</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return a CNF expression for the disjunction.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="skolemize"><A HREF="../FOL\normal.cl"><B>skolemize</B></A></A> (<I>p</I> <I>vars</I> <I>outside-vars</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Within the proposition P, replace each of VARS with a skolem constant,
+  or if OUTSIDE-VARS is non-null, a skolem function of them.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*skolemization-counter*"><A HREF="../FOL\normal.cl"><B>*skolemization-counter*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="skolem-constant"><A HREF="../FOL\normal.cl"><B>skolem-constant</B></A></A> (<I>name</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return a unique skolem constant, a symbol starting with '$'.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="renaming?"><A HREF="../FOL\normal.cl"><B>renaming?</B></A></A> (<I>p</I> <I>q</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Are p and q renamings of each other? (That is, expressions that differ
+  only in variable names?)</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Utility Predicates and Accessors
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="+logical-connectives+"><A HREF="../FOL\normal.cl"><B>+logical-connectives+</B></A></A> ()</U></TD>
+<TD width="70" align="right">[constant]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="+logical-quantifiers+"><A HREF="../FOL\normal.cl"><B>+logical-quantifiers+</B></A></A> ()</U></TD>
+<TD width="70" align="right">[constant]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="atomic-clause?"><A HREF="../FOL\normal.cl"><B>atomic-clause?</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>An atomic clause has no connectives or quantifiers.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="literal-clause?"><A HREF="../FOL\normal.cl"><B>literal-clause?</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A literal is an atomic clause or a negated atomic clause.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="negative-clause?"><A HREF="../FOL\normal.cl"><B>negative-clause?</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A negative clause has NOT as the operator.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="horn-clause?"><A HREF="../FOL\normal.cl"><B>horn-clause?</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A Horn clause (in INF) is an implication with atoms on the left and one
+  atom on the right.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="conjuncts"><A HREF="../FOL\normal.cl"><B>conjuncts</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return a list of the conjuncts in this sentence.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="disjuncts"><A HREF="../FOL\normal.cl"><B>disjuncts</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Return a list of the disjuncts in this sentence.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="conjunction"><A HREF="../FOL\normal.cl"><B>conjunction</B></A></A> (<I>args</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Form a conjunction with these args.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="disjunction"><A HREF="../FOL\normal.cl"><B>disjunction</B></A></A> (<I>args</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Form a disjunction with these args.</TD>
+</TR></TBODY></TABLE></DIV> 
+<A NAME="FOL\fol.cl"><HR>
+<H2>File <A HREF="../FOL\fol.cl">FOL\fol.cl</A></H2></A>
+<H2> First Order Logic (FOL) Tell, Retract, and Ask-Each
+</H2>
+ This file is copied from AIMA logic normal.lisp by Seiji
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="tell:fol-kb"><A HREF="../FOL\fol.cl"><B>tell</B></A></A> (<I>(kb
+                                                                                  fol-kb)</I> <I>sentence</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Add a <I>sentence</I> to a FOL knowledge base.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="retract:fol-kb"><A HREF="../FOL\fol.cl"><B>retract</B></A></A> (<I>(kb
+                                                                                        fol-kb)</I> <I>sentence</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Delete each conjunct of <I>sentence</I> from KB.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ask-each:fol-kb"><A HREF="../FOL\fol.cl"><B>ask-each</B></A></A> (<I>(kb
+                                                                                          fol-kb)</I> <I>query</I> <I>fn</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Use resolution to decide if sentence <I>query</I> is true.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> FOL Knowledge Base Utility Functions
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="possible-resolvers"><A HREF="../FOL\fol.cl"><B>possible-resolvers</B></A></A> (<I>kb</I> <I>literal</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Find clauses that might resolve with a clause containing <I>literal</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="tell-minimal-cnf-clause"><A HREF="../FOL\fol.cl"><B>tell-minimal-cnf-clause</B></A></A> (<I>kb</I> <I>clause</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="retract-minimal-cnf-clauses"><A HREF="../FOL\fol.cl"><B>retract-minimal-cnf-clauses</B></A></A> (<I>kb</I> <I>clauses</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Remove the minimal-cnf clauses from the KB.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="->minimal-cnf"><A HREF="../FOL\fol.cl"><B>->minimal-cnf</B></A></A> (<I>sentence</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Convert a logical sentence to minimal CNF (no and/or connectives).</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="undo-temp-changes"><A HREF="../FOL\fol.cl"><B>undo-temp-changes</B></A></A> (<I>kb</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Undo the changes that were temporarilly made to KB.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="tautology?"><A HREF="../FOL\fol.cl"><B>tautology?</B></A></A> (<I>clause</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Is clause a tautology (something that is always true)?</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Functions for Resolution Refutation Theorem Proving
+</H2>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="prove-by-refutation"><A HREF="../FOL\fol.cl"><B>prove-by-refutation</B></A></A> (<I>kb</I> <I>sos</I> <I>fn</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Try to prove that ~<I>sos</I> is true (given KB) by resolution refutation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="resolve"><A HREF="../FOL\fol.cl"><B>resolve</B></A></A> (<I>literal</I> <I>clause</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Resolve a single literal against a clause</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="insert"><A HREF="../FOL\fol.cl"><B>insert</B></A></A> (<I>item</I> <I>list</I> <I>pred</I> <I>&key</I> <I>key</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<HR>
+<TABLE BORDER=4 CELLPADDING=4 CELLSPACING=0><tr>
+<td> <A HREF="http://www-kasm.nii.ac.jp/~koide/planning-en.htm">Planning Home</A>
+<td> <A HREF="../../contact.html">Authors</A>
+<td> <A HREF="overview.html">Lisp Code Overview</A>
+</TABLE>
+</BODY> 
+</HTML>

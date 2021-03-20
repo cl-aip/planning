@@ -1,0 +1,407 @@
+<HTML><TITLE>Index of Planning Code</TITLE>
+ <BODY bgcolor="#ffffff">
+ <H1>Index of Planning Code</H1>
+There are 387 definitions (323 functions, 12 macros, 20 global variables and 19 types) defined in 13 files in the <I>planning</I> code.  They are listed below in the left column, with links
+  to the overview of each definition (documentation string, and parameter
+  list for functions).  From the overview you can link to the source code.
+  The letters F, M, V, and T in the links stand for function, macro, variable 
+  and type, respectively.  <P> In the right
+  column are the 182 built-in Common Lisp symbols used in the code (along with
+  the number of times each is used).  You can
+  follow a link to the definition of each one in the 
+  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/ansicl.htm">
+  ANSI Common Lisp Documentation</A> (based on the ANSI standard document).
+  You can also go directly to the <A HREF="overview.html">overview</A> 
+  or the <A HREF="../">code directory</A>.
+  <P><CENTER>
+  <A HREF="#*"> *</A>
+  <A HREF="#A"> A</A> <A HREF="#B"> B</A> <A HREF="#C"> C</A>
+  <A HREF="#D"> D</A> <A HREF="#E"> E</A> <A HREF="#F"> F</A>
+  <A HREF="#G"> G</A> <A HREF="#H"> H</A> <A HREF="#I"> I</A>
+  <A HREF="#J"> J</A> <A HREF="#K"> K</A> <A HREF="#L"> L</A>
+  <A HREF="#M"> M</A> <A HREF="#N"> N</A> <A HREF="#O"> O</A>
+  <A HREF="#P"> P</A> <A HREF="#Q"> Q</A> <A HREF="#R"> R</A>
+  <A HREF="#S"> S</A> <A HREF="#T"> T</A> <A HREF="#U"> U</A>
+  <A HREF="#V"> V</A> <A HREF="#W"> W</A> <A HREF="#X"> X</A>
+  <A HREF="#Y"> Y</A> <A HREF="#Z"> Z</A> </CENTER>
+<PRE>
+Planning Symbols                           Common Lisp Symbols
+==========================                 ===================
+                                       <B><A NAME=%>%</A></B>
+%closer-flaw-up-to (1) <A HREF="overview-plan.html#%closer-flaw-up-to">f</A>                   <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/specifie.htm#&aux">&aux</A> (3) 
+%make-constr1 (1) <A HREF="overview-plan.html#%make-constr1">f</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsecti/macrolam.htm#&body">&body</A> (5) 
+%remove-redundant-orderings (1) <A HREF="overview-plan.html#%remove-redundant-orderings">f</A>          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsecti/macrolam.htm#&environment">&environment</A> (1) 
+%task-of (1) <A HREF="overview-plan.html#%task-of">f</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/specifi0.htm#&key">&key</A> (5) 
+*debugging* (1) <A HREF="overview-utils.html#*debugging*">v</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/specifi1.htm#&optional">&optional</A> (22) 
+*finish* (1) <A HREF="overview-plan.html#*finish*">v</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/aspecifi.htm#&rest">&rest</A> (16) 
+*global-counter* (1) <A HREF="overview-plan.html#*global-counter*">v</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/unnamed.htm#*">*</A> (9) 
+*global-counter-limit* (1) <A HREF="overview-plan.html#*global-counter-limit*">v</A>               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/unnamed0.htm#+">+</A> (15) 
+*goal* (1) <A HREF="overview-plan.html#*goal*">v</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/-.htm#-">-</A> (23) 
+*infix-ops* (1) <A HREF="overview-FOL.html#*infix-ops*">v</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/unnamed4.htm#/">/</A> (7) 
+*methods* (1) <A HREF="overview-plan.html#*methods*">v</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ltgtltgt.htm#/=">/=</A> (1) 
+*new-variable-counter* (1) <A HREF="overview-FOL.html#*new-variable-counter*">v</A>               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/11-.htm#1+">1+</A> (3) 
+*operators* (1) <A HREF="overview-plan.html#*operators*">v</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/11-.htm#1-">1-</A> (9) 
+*paths* (1) <A HREF="overview-utils.html#*paths*">v</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ltgtltgt.htm#<"><</A> (3) 
+*skolemization-counter* (1) <A HREF="overview-FOL.html#*skolemization-counter*">v</A>              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ltgtltgt.htm#<="><=</A> (4) 
+*start* (1) <A HREF="overview-plan.html#*start*">v</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ltgtltgt.htm#=">=</A> (24) 
+*state* (1) <A HREF="overview-plan.html#*state*">v</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ltgtltgt.htm#>">></A> (6) 
++fail+ (1) <A HREF="overview-FOL.html#+fail+">v</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ltgtltgt.htm#>=">>=</A> (4) 
++logical-connectives+ (1) <A HREF="overview-FOL.html#+logical-connectives+">v</A>                
++logical-quantifiers+ (1) <A HREF="overview-FOL.html#+logical-quantifiers+">v</A>                
++no-bindings+ (1) <A HREF="overview-FOL.html#+no-bindings+">v</A>                        
+->cnf (1) <A HREF="overview-FOL.html#->cnf">f</A>                                
+->horn (1) <A HREF="overview-FOL.html#->horn">f</A>                               
+->inf (1) <A HREF="overview-FOL.html#->inf">f</A>                                
+->minimal-cnf (1) <A HREF="overview-FOL.html#->minimal-cnf">f</A>                        
+->prefix (1) <A HREF="overview-FOL.html#->prefix">f</A>                             
+=apply (1) <A HREF="overview-utils.html#=apply">m</A>                               
+=bind (1) <A HREF="overview-utils.html#=bind">m</A>                                
+=defun (1) <A HREF="overview-utils.html#=defun">m</A>                               
+=funcall (1) <A HREF="overview-utils.html#=funcall">m</A>                             
+=lambda (1) <A HREF="overview-utils.html#=lambda">m</A>                              
+=values (1) <A HREF="overview-utils.html#=values">m</A>                              
+                                           
+                                       <B><A NAME=A>A</A></B>
+action (2) <A HREF="overview-plan.html#action">f</A> <A HREF="overview-plan.html#action">t</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/alpha-ch.htm#alpha-char-p">alpha-char-p</A> (1) 
+action-equal-p (1) <A HREF="overview-plan.html#action-equal-p">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/alphanum.htm#alphanumericp">alphanumericp</A> (2) 
+action-name (1) <A HREF="overview-plan.html#action-name">t</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/and0.htm#and">and</A> (94) 
+activate-method (1) <A HREF="overview-plan.html#activate-method">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/append.htm#append">append</A> (21) 
+activate-operator (1) <A HREF="overview-plan.html#activate-operator">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/apply.htm#apply">apply</A> (6) 
+add-action (1) <A HREF="overview-plan.html#add-action">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/aref.htm#aref">aref</A> (2) 
+add-bindings (1) <A HREF="overview-plan.html#add-bindings">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/array.htm#array">array</A> (3) 
+add-causal-link (1) <A HREF="overview-plan.html#add-causal-link">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/array-d0.htm#array-dimensions">array-dimensions</A> (1) 
+add-ordering (1) <A HREF="overview-plan.html#add-ordering">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/array-t0.htm#array-total-size">array-total-size</A> (1) 
+after-const (1) <A HREF="overview-plan.html#after-const">t</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/assert.htm#assert">assert</A> (7) 
+applicable-action-p (1) <A HREF="overview-plan.html#applicable-action-p">f</A>                  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/assocass.htm#assoc">assoc</A> (3) 
+applicable-p (2) <A HREF="overview-plan.html#applicable-p:method">f</A> <A HREF="overview-plan.html#applicable-p:operator">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/atom0.htm#atom">atom</A> (7) 
+arg1 (3) <A HREF="overview-plan.html#arg1:statevar">f</A> <A HREF="overview-utils.html#arg1:cons">f</A> <A HREF="overview-utils.html#arg1">f</A>                             
+arg2 (3) <A HREF="overview-plan.html#arg2:statevar">f</A> <A HREF="overview-utils.html#arg2:cons">f</A> <A HREF="overview-utils.html#arg2">f</A>                             
+args (4) <A HREF="overview-plan.html#args:statevar">f</A> <A HREF="overview-utils.html#args:cons">f</A> <A HREF="overview-utils.html#args:t">f</A> <A HREF="overview-utils.html#args">f</A>                           
+array->vector (1) <A HREF="overview-utils.html#array->vector">f</A>                        
+ask-each (1) <A HREF="overview-FOL.html#ask-each:fol-kb">f</A>                             
+atomic-clause? (1) <A HREF="overview-FOL.html#atomic-clause?">f</A>                       
+average (1) <A HREF="overview-utils.html#average">f</A>                              
+                                           
+                                       <B><A NAME=B>B</A></B>
+before-const (1) <A HREF="overview-plan.html#before-const">t</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/boundp.htm#boundp">boundp</A> (1) 
+between (1) <A HREF="overview-utils.html#between">f</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/butlastn.htm#butlast">butlast</A> (5) 
+binding-val (1) <A HREF="overview-FOL.html#binding-val">f</A>                          
+binding-var (1) <A HREF="overview-FOL.html#binding-var">f</A>                          
+boolean-error (1) <A HREF="overview-utils.html#boolean-error">f</A>                        
+                                           
+                                       <B><A NAME=C>C</A></B>
+causal-link (2) <A HREF="overview-plan.html#causal-link">f</A> <A HREF="overview-plan.html#causal-link">t</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/carcdrca.htm#car">car</A> (43) 
+causal-link-proposition (1) <A HREF="overview-plan.html#causal-link-proposition">f</A>              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/caseccas.htm#case">case</A> (14) 
+cb (1) <A HREF="overview-utils.html#cb">f</A>                                   <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/carcdrca.htm#cdr">cdr</A> (30) 
+choose (1) <A HREF="overview-utils.html#choose">m</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/charscha.htm#char">char</A> (10) 
+choose-bind (1) <A HREF="overview-utils.html#choose-bind">m</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/charchar.htm#char=">char=</A> (8) 
+closer-flaw-up-to (1) <A HREF="overview-plan.html#closer-flaw-up-to">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/concate1.htm#concatenate">concatenate</A> (1) 
+cnf1->inf1 (1) <A HREF="overview-FOL.html#cnf1->inf1">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/cond.htm#cond">cond</A> (75) 
+collect-open-goals (1) <A HREF="overview-plan.html#collect-open-goals">f</A>                   <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/cons.htm#cons">cons</A> (37) 
+collect-open-nodes-in (1) <A HREF="overview-plan.html#collect-open-nodes-in">f</A>                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/consp.htm#consp">consp</A> (14) 
+collect-resolvers (1) <A HREF="overview-plan.html#collect-resolvers">f</A>                    
+collect-threats (1) <A HREF="overview-plan.html#collect-threats">f</A>                      
+compose (1) <A HREF="overview-utils.html#compose">f</A>                              
+compound-unify (7) <A HREF="overview-plan.html#compound-unify:method">f</A> <A HREF="overview-plan.html#compound-unify:meth-name">f</A> <A HREF="overview-plan.html#compound-unify:task">f</A> <A HREF="overview-plan.html#compound-unify:operator">f</A> <A HREF="overview-plan.html#compound-unify:ope-name">f</A> <A HREF="overview-plan.html#compound-unify:statevar">f</A> <A HREF="overview-FOL.html#compound-unify">f</A>           
+compound-unify? (8) <A HREF="overview-plan.html#compound-unify?:method">f</A> <A HREF="overview-plan.html#compound-unify?:meth-name">f</A> <A HREF="overview-plan.html#compound-unify?:task">f</A> <A HREF="overview-plan.html#compound-unify?:operator">f</A> <A HREF="overview-plan.html#compound-unify?:ope-name">f</A> <A HREF="overview-plan.html#compound-unify?:statevar">f</A> <A HREF="overview-FOL.html#compound-unify?:t">f</A> <A HREF="overview-FOL.html#compound-unify?">f</A>        
+compute-consistent-bindings (1) <A HREF="overview-plan.html#compute-consistent-bindings">f</A>          
+compute-safety-ordering (1) <A HREF="overview-plan.html#compute-safety-ordering">f</A>              
+concat-symbol (1) <A HREF="overview-utils.html#concat-symbol">f</A>                        
+conjunction (1) <A HREF="overview-FOL.html#conjunction">f</A>                          
+conjuncts (1) <A HREF="overview-FOL.html#conjuncts">f</A>                            
+consistent-bindings-in-plan-p (1) <A HREF="overview-plan.html#consistent-bindings-in-plan-p">f</A>        
+consistent-bindings-p (1) <A HREF="overview-plan.html#consistent-bindings-p">f</A>                
+consistent-ordering-p (1) <A HREF="overview-plan.html#consistent-ordering-p">f</A>                
+consistent-unifiable-p (1) <A HREF="overview-plan.html#consistent-unifiable-p">f</A>               
+constraint (2) <A HREF="overview-plan.html#constraint">f</A> <A HREF="overview-plan.html#constraint">t</A>                         
+constraint-effects (1) <A HREF="overview-plan.html#constraint-effects">f</A>                   
+constraint-orderings (1) <A HREF="overview-plan.html#constraint-orderings">f</A>                 
+constraint-precond (1) <A HREF="overview-plan.html#constraint-precond">f</A>                   
+copy-array (1) <A HREF="overview-utils.html#copy-array">f</A>                           
+copy-hash-table (1) <A HREF="overview-utils.html#copy-hash-table">f</A>                      
+copy-subarray (1) <A HREF="overview-utils.html#copy-subarray">f</A>                        
+                                           
+                                       <B><A NAME=D>D</A></B>
+decompose (1) <A HREF="overview-plan.html#decompose">f</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/declaim.htm#declaim">declaim</A> (2) 
+define-if-undefined (1) <A HREF="overview-utils.html#define-if-undefined">m</A>                  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/declare.htm#declare">declare</A> (21) 
+define-method (1) <A HREF="overview-plan.html#define-method">m</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defconst.htm#defconstant">defconstant</A> (7) 
+defoperator (1) <A HREF="overview-plan.html#defoperator">m</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defgener.htm#defgeneric">defgeneric</A> (7) 
+deletef (1) <A HREF="overview-utils.html#deletef">m</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defmacro.htm#defmacro">defmacro</A> (13) 
+dft (1) <A HREF="overview-utils.html#dft">f</A>                                  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defmetho.htm#defmethod">defmethod</A> (55) 
+disjunction (1) <A HREF="overview-FOL.html#disjunction">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defpacka.htm#defpackage">defpackage</A> (13) 
+disjuncts (1) <A HREF="overview-FOL.html#disjuncts">f</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defparam.htm#defparameter">defparameter</A> (2) 
+dot-product (1) <A HREF="overview-utils.html#dot-product">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defsetf.htm#defsetf">defsetf</A> (1) 
+dprint (1) <A HREF="overview-utils.html#dprint">f</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/defstruct.#defstruct">defstruct</A> (20) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defun.htm#defun">defun</A> (263) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/defparam.htm#defvar">defvar</A> (11) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/removere.htm#delete">delete</A> (1) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/dodo.htm#do">do</A> (28) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/dolist.htm#dolist">dolist</A> (5) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/dotimes.htm#dotimes">dotimes</A> (3) 
+                                           
+                                       <B><A NAME=E>E</A></B>
+earliest-predecessors-in (1) <A HREF="overview-plan.html#earliest-predecessors-in">f</A>             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/caseccas.htm#ecase">ecase</A> (1) 
+edge-equal-p (1) <A HREF="overview-plan.html#edge-equal-p">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/elt.htm#elt">elt</A> (9) 
+eliminate-implications (1) <A HREF="overview-FOL.html#eliminate-implications">f</A>               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/eq.htm#eq">eq</A> (131) 
+evolve-network (1) <A HREF="overview-plan.html#evolve-network">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/eql.htm#eql">eql</A> (14) 
+extend-bindings (1) <A HREF="overview-FOL.html#extend-bindings">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/equal.htm#equal">equal</A> (19) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/equalp.htm#equalp">equalp</A> (29) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/error.htm#error">error</A> (11) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/typecase.htm#etypecase">etypecase</A> (4) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/processi.htm#eval-when">eval-when</A> (2) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/everysom.htm#every">every</A> (22) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/expexpt.htm#exp">exp</A> (96) 
+                                           
+                                       <B><A NAME=F>F</A></B>
+fail (1) <A HREF="overview-utils.html#fail">f</A>                                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/fboundp.htm#fboundp">fboundp</A> (2) 
+failsym (1) <A HREF="overview-utils.html#failsym">v</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#fifth">fifth</A> (1) 
+false (1) <A HREF="overview-utils.html#false">f</A>                                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/findfind.htm#find">find</A> (17) 
+find-anywhere-if (1) <A HREF="overview-FOL.html#find-anywhere-if">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/findfind.htm#find-if">find-if</A> (3) 
+find-consumer-action-related-to (1) <A HREF="overview-plan.html#find-consumer-action-related-to">f</A>      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/findfind.htm#find-if-not">find-if-not</A> (1) 
+find-effect-related-to (1) <A HREF="overview-plan.html#find-effect-related-to">f</A>               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#first">first</A> (48) 
+find-link-related-to (1) <A HREF="overview-plan.html#find-link-related-to">f</A>                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/fletlabe.htm#flet">flet</A> (1) 
+find-operator (1) <A HREF="overview-plan.html#find-operator">f</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/float.htm#float">float</A> (2) 
+finish (1) <A HREF="overview-plan.html#finish">f</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/format.htm#format">format</A> (64) 
+function-symbol? (1) <A HREF="overview-FOL.html#function-symbol?">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#fourth">fourth</A> (2) 
+fuzz (1) <A HREF="overview-utils.html#fuzz">f</A>                                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/funcall.htm#funcall">funcall</A> (22) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/function.htm#function">function</A> (252) 
+                                           
+                                       <B><A NAME=G>G</A></B>
+get-binding (1) <A HREF="overview-FOL.html#get-binding">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/gensym.htm#gensym">gensym</A> (1) 
+get-disagreement-set (1) <A HREF="overview-FOL.html#get-disagreement-set">f</A>                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/get-setf.htm#get-setf-expansion">get-setf-expansion</A> (1) 
+get-mgu (1) <A HREF="overview-FOL.html#get-mgu">f</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/getf.htm#getf">getf</A> (16) 
+goal-relevant-p (1) <A HREF="overview-plan.html#goal-relevant-p">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/gethash.htm#gethash">gethash</A> (7) 
+ground-p (6) <A HREF="overview-plan.html#ground-p:network">f</A> <A HREF="overview-plan.html#ground-p:node">f</A> <A HREF="overview-plan.html#ground-p:task">f</A> <A HREF="overview-plan.html#ground-p:method">f</A> <A HREF="overview-plan.html#ground-p:operator">f</A> <A HREF="overview-plan.html#ground-p:statevar">f</A>                   
+                                           
+                                       <B><A NAME=H>H</A></B>
+handle-quantifiers (1) <A HREF="overview-FOL.html#handle-quantifiers">f</A>                   
+hash-table->list (1) <A HREF="overview-utils.html#hash-table->list">f</A>                     
+horn-clause? (1) <A HREF="overview-FOL.html#horn-clause?">f</A>                         
+hprint (1) <A HREF="overview-utils.html#hprint">f</A>                               
+                                           
+                                       <B><A NAME=I>I</A></B>
+inconsistent-bindings-p (1) <A HREF="overview-plan.html#inconsistent-bindings-p">f</A>              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/identity.htm#identity">identity</A> (3) 
+inconsistent-effects-p (1) <A HREF="overview-plan.html#inconsistent-effects-p">f</A>               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/if.htm#if">if</A> (70) 
+infinity (1) <A HREF="overview-utils.html#infinity">v</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/ignoreig.htm#ignore">ignore</A> (21) 
+insert (1) <A HREF="overview-FOL.html#insert">f</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/in-packa.htm#in-package">in-package</A> (13) 
+insert-between (1) <A HREF="overview-utils.html#insert-between">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/incfdecf.htm#incf">incf</A> (5) 
+instantiate-relevant-from (1) <A HREF="overview-plan.html#instantiate-relevant-from">f</A>            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/intern.htm#intern">intern</A> (6) 
+iota (1) <A HREF="overview-utils.html#iota">f</A>                                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/intersec.htm#intersection">intersection</A> (7) 
+                                           
+                                       <B><A NAME=L>L</A></B>
+last1 (1) <A HREF="overview-utils.html#last1">f</A>                                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/fletlabe.htm#labels">labels</A> (1) 
+left-rotate (1) <A HREF="overview-utils.html#left-rotate">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/lambda.htm#lambda">lambda</A> (68) 
+length-in-1diff (1) <A HREF="overview-utils.html#length-in-1diff">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/last.htm#last">last</A> (12) 
+length=1 (1) <A HREF="overview-utils.html#length=1">f</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/length.htm#length">length</A> (41) 
+length>1 (1) <A HREF="overview-utils.html#length>1">f</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/letlet.htm#let">let</A> (80) 
+literal-clause? (1) <A HREF="overview-FOL.html#literal-clause?">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/letlet.htm#let*">let*</A> (6) 
+logic (1) <A HREF="overview-FOL.html#logic">f</A>                                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/list.htm#list">list</A> (72) 
+lookup (1) <A HREF="overview-FOL.html#lookup">f</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/listlist.htm#list*">list*</A> (1) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/listp.htm#listp">listp</A> (2) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/loop.htm#loop">loop</A> (36) 
+                                           
+                                       <B><A NAME=M>M</A></B>
+make-action-from (1) <A HREF="overview-plan.html#make-action-from">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/macro-fu.htm#macro-function">macro-function</A> (1) 
+make-binding (1) <A HREF="overview-FOL.html#make-binding">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/make-arr.htm#make-array">make-array</A> (2) 
+make-constr1 (1) <A HREF="overview-plan.html#make-constr1">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/make-has.htm#make-hash-table">make-hash-table</A> (3) 
+make-exp (1) <A HREF="overview-utils.html#make-exp:t">f</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/call-met.htm#make-method">make-method</A> (5) 
+make-logic-symbol (1) <A HREF="overview-FOL.html#make-logic-symbol">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/mapcmapc.htm#mapc">mapc</A> (2) 
+make-minimal-plan (1) <A HREF="overview-plan.html#make-minimal-plan">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/mapcmapc.htm#mapcan">mapcan</A> (1) 
+make-subtasks1 (1) <A HREF="overview-plan.html#make-subtasks1">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/mapcmapc.htm#mapcar">mapcar</A> (61) 
+mappend (1) <A HREF="overview-utils.html#mappend">f</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/maphash.htm#maphash">maphash</A> (3) 
+merge-disjuncts (1) <A HREF="overview-FOL.html#merge-disjuncts">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/member.htm#member">member</A> (9) 
+meth-name (2) <A HREF="overview-plan.html#meth-name">f</A> <A HREF="overview-plan.html#meth-name">t</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/merge.htm#merge">merge</A> (1) 
+method (2) <A HREF="overview-plan.html#method">f</A> <A HREF="overview-plan.html#method">t</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/method.htm#method">method</A> (48) 
+method-effects (1) <A HREF="overview-plan.html#method-effects">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/most-po0.htm#most-negative-single-float">most-negative-single-float</A> (1) 
+method-precond (1) <A HREF="overview-plan.html#method-precond">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/most-po0.htm#most-positive-single-float">most-positive-single-float</A> (1) 
+method-symbol (1) <A HREF="overview-plan.html#method-symbol">f</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/multiple.htm#multiple-value-bind">multiple-value-bind</A> (3) 
+method-variables (1) <A HREF="overview-plan.html#method-variables">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/multipl3.htm#multiple-value-setq">multiple-value-setq</A> (1) 
+minus-infinity (1) <A HREF="overview-utils.html#minus-infinity">v</A>                       
+mklist (1) <A HREF="overview-utils.html#mklist">f</A>                               
+move-not-inwards (1) <A HREF="overview-FOL.html#move-not-inwards">f</A>                     
+ms-error (1) <A HREF="overview-utils.html#ms-error">f</A>                             
+                                           
+                                       <B><A NAME=N>N</A></B>
+negate-state-p (1) <A HREF="overview-plan.html#negate-state-p">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/built-in.htm#nconc">nconc</A> (2) 
+negative-clause? (1) <A HREF="overview-FOL.html#negative-clause?">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/not.htm#not">not</A> (52) 
+negative-effects (1) <A HREF="overview-plan.html#negative-effects">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/everysom.htm#notany">notany</A> (6) 
+negative-precond (1) <A HREF="overview-plan.html#negative-precond">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/reversen.htm#nreverse">nreverse</A> (1) 
+negative-statevar-p (1) <A HREF="overview-plan.html#negative-statevar-p">f</A>                  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/nth.htm#nth">nth</A> (1) 
+network (1) <A HREF="overview-plan.html#network">t</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsecti/charact0.htm#null">null</A> (32) 
+network-of (1) <A HREF="overview-plan.html#network-of">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/number.htm#number">number</A> (2) 
+new-variable (1) <A HREF="overview-FOL.html#new-variable">f</A>                         
+no-predecessor-p (1) <A HREF="overview-plan.html#no-predecessor-p">f</A>                     
+node (1) <A HREF="overview-plan.html#node">t</A>                                 
+node-equalp (1) <A HREF="overview-plan.html#node-equalp">f</A>                          
+normal (1) <A HREF="overview-utils.html#normal">f</A>                               
+normalize-statevar (1) <A HREF="overview-plan.html#normalize-statevar">f</A>                   
+nothing (1) <A HREF="overview-utils.html#nothing">f</A>                              
+                                           
+                                       <B><A NAME=O>O</A></B>
+occurs-in? (1) <A HREF="overview-FOL.html#occurs-in?">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/or.htm#or">or</A> (45) 
+op (4) <A HREF="overview-plan.html#op:statevar">f</A> <A HREF="overview-utils.html#op:cons">f</A> <A HREF="overview-utils.html#op:t">f</A> <A HREF="overview-utils.html#op">f</A>                             <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/caseccas.htm#otherwise">otherwise</A> (9) 
+op-match (1) <A HREF="overview-FOL.html#op-match">f</A>                             
+op-name (1) <A HREF="overview-FOL.html#op-name">f</A>                              
+op-token (1) <A HREF="overview-FOL.html#op-token">f</A>                             
+op-type (1) <A HREF="overview-FOL.html#op-type">f</A>                              
+ope-name (2) <A HREF="overview-plan.html#ope-name">f</A> <A HREF="overview-plan.html#ope-name">t</A>                           
+ope-name-equal-p (1) <A HREF="overview-plan.html#ope-name-equal-p">f</A>                     
+operator (2) <A HREF="overview-plan.html#operator">f</A> <A HREF="overview-plan.html#operator">t</A>                           
+operator-char? (1) <A HREF="overview-FOL.html#operator-char?">f</A>                       
+operator-equal-p (1) <A HREF="overview-plan.html#operator-equal-p">f</A>                     
+operator-symbol (1) <A HREF="overview-plan.html#operator-symbol">f</A>                      
+operator-unify-for-progression (1) <A HREF="overview-plan.html#operator-unify-for-progression">f</A>       
+operator-unify-for-regression (1) <A HREF="overview-plan.html#operator-unify-for-regression">f</A>        
+operator-variables (1) <A HREF="overview-plan.html#operator-variables">f</A>                   
+opposite-compound-unify (1) <A HREF="overview-plan.html#opposite-compound-unify:statevar">f</A>              
+opposite-statevar-unify (1) <A HREF="overview-plan.html#opposite-statevar-unify">f</A>              
+ordering (2) <A HREF="overview-plan.html#ordering">f</A> <A HREF="overview-plan.html#ordering">t</A>                           
+ordering-equal-p (1) <A HREF="overview-plan.html#ordering-equal-p">f</A>                     
+ordering-satisfied-p (1) <A HREF="overview-plan.html#ordering-satisfied-p">f</A>                 
+                                           
+                                       <B><A NAME=P>P</A></B>
+parse-infix-token (1) <A HREF="overview-FOL.html#parse-infix-token">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/parse-in.htm#parse-integer">parse-integer</A> (1) 
+parse-span (1) <A HREF="overview-FOL.html#parse-span">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/pi.htm#pi">pi</A> (1) 
+partial-unify (1) <A HREF="overview-plan.html#partial-unify">f</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/pop.htm#pop">pop</A> (3) 
+plan (2) <A HREF="overview-plan.html#plan">f</A> <A HREF="overview-plan.html#plan">t</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/position.htm#position">position</A> (1) 
+plot-alist (1) <A HREF="overview-utils.html#plot-alist">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/position.htm#position-if">position-if</A> (1) 
+positive-effects (1) <A HREF="overview-plan.html#positive-effects">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/position.htm#position-if-not">position-if-not</A> (2) 
+positive-precond (1) <A HREF="overview-plan.html#positive-precond">f</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/writepri.htm#princ">princ</A> (2) 
+positive-statevar-p (1) <A HREF="overview-plan.html#positive-statevar-p">f</A>                  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/progn.htm#progn">progn</A> (5) 
+possible-resolvers (1) <A HREF="overview-FOL.html#possible-resolvers">f</A>                   <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/push.htm#push">push</A> (9) 
+precedence-const (1) <A HREF="overview-plan.html#precedence-const">t</A>                     <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/pushnew.htm#pushnew">pushnew</A> (4) 
+precond-unify (1) <A HREF="overview-plan.html#precond-unify">f</A>                        
+prefix->infix (1) <A HREF="overview-utils.html#prefix->infix">f</A>                        
+primitive-p (1) <A HREF="overview-plan.html#primitive-p">f</A>                          
+print-after-const (1) <A HREF="overview-plan.html#print-after-const">f</A>                    
+print-before-const (1) <A HREF="overview-plan.html#print-before-const">f</A>                   
+print-causal-link (1) <A HREF="overview-plan.html#print-causal-link">f</A>                    
+print-constraint (1) <A HREF="overview-plan.html#print-constraint">f</A>                     
+print-meth-name (1) <A HREF="overview-plan.html#print-meth-name">f</A>                      
+print-method (1) <A HREF="overview-plan.html#print-method">f</A>                         
+print-ope-name (1) <A HREF="overview-plan.html#print-ope-name">f</A>                       
+print-operator (1) <A HREF="overview-plan.html#print-operator">f</A>                       
+print-ordering (1) <A HREF="overview-plan.html#print-ordering">f</A>                       
+print-plan (1) <A HREF="overview-plan.html#print-plan">f</A>                           
+print-precedence-const (1) <A HREF="overview-plan.html#print-precedence-const">f</A>               
+print-repeated (1) <A HREF="overview-utils.html#print-repeated">f</A>                       
+print-statevar (1) <A HREF="overview-plan.html#print-statevar">f</A>                       
+print-task (1) <A HREF="overview-plan.html#print-task">f</A>                           
+progress (1) <A HREF="overview-plan.html#progress">f</A>                             
+progress-action (1) <A HREF="overview-plan.html#progress-action">f</A>                      
+prove-by-refutation (1) <A HREF="overview-FOL.html#prove-by-refutation">f</A>                  
+pseudo-statevar-equalp (1) <A HREF="overview-plan.html#pseudo-statevar-equalp">f</A>               
+pseudo-statevar-equalp-with-unify (1) <A HREF="overview-plan.html#pseudo-statevar-equalp-with-unify">f</A>    
+                                           
+                                       <B><A NAME=Q>Q</A></B>
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsecti/single-q.htm#quote">quote</A> (72) 
+                                           
+                                       <B><A NAME=R>R</A></B>
+random-element (1) <A HREF="overview-utils.html#random-element">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/random.htm#random">random</A> (5) 
+random-integer (1) <A HREF="overview-utils.html#random-integer">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/rassocra.htm#rassoc">rassoc</A> (2) 
+reduce-infix (1) <A HREF="overview-FOL.html#reduce-infix">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/reduce.htm#reduce">reduce</A> (3) 
+reduce-matching-op (1) <A HREF="overview-FOL.html#reduce-matching-op">f</A>                   <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/removere.htm#remove">remove</A> (6) 
+refine (1) <A HREF="overview-plan.html#refine">f</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/removere.htm#remove-if">remove-if</A> (16) 
+regress (1) <A HREF="overview-plan.html#regress">f</A>                              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/removere.htm#remove-if-not">remove-if-not</A> (17) 
+regression-operation (1) <A HREF="overview-plan.html#regression-operation">f</A>                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/rest.htm#rest">rest</A> (19) 
+relevant (2) <A HREF="overview-plan.html#relevant">f</A> <A HREF="overview-plan.html#relevant">t</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/return.htm#return">return</A> (8) 
+relevant-method (1) <A HREF="overview-plan.html#relevant-method">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/return-f.htm#return-from">return-from</A> (8) 
+relevant-method-of (1) <A HREF="overview-plan.html#relevant-method-of">f</A>                   <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/reversen.htm#reverse">reverse</A> (5) 
+relevant-method-p (1) <A HREF="overview-plan.html#relevant-method-p">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/floorffl.htm#round">round</A> (1) 
+relevant-operator-of (1) <A HREF="overview-plan.html#relevant-operator-of">f</A>                 
+relevant-operator-p (1) <A HREF="overview-plan.html#relevant-operator-p">f</A>                  
+remove-action-occured (1) <A HREF="overview-plan.html#remove-action-occured">f</A>                
+remove-commas (1) <A HREF="overview-FOL.html#remove-commas">f</A>                        
+remove-redundant-orderings (1) <A HREF="overview-plan.html#remove-redundant-orderings">f</A>           
+remove-relevant-occured (1) <A HREF="overview-plan.html#remove-relevant-occured">f</A>              
+rename-variables (1) <A HREF="overview-FOL.html#rename-variables">f</A>                     
+renaming? (1) <A HREF="overview-FOL.html#renaming?">f</A>                            
+replace-subseq (1) <A HREF="overview-FOL.html#replace-subseq">f</A>                       
+replace-task-in-orderings (1) <A HREF="overview-plan.html#replace-task-in-orderings">f</A>            
+replace-task-in-precedence-const (1) <A HREF="overview-plan.html#replace-task-in-precedence-const">f</A>     
+replace-task-in-precedence-consts (1) <A HREF="overview-plan.html#replace-task-in-precedence-consts">f</A>    
+replace-task-in-precedence-ordering (1) <A HREF="overview-plan.html#replace-task-in-precedence-ordering">f</A>  
+required (1) <A HREF="overview-utils.html#required">f</A>                             
+resolve (1) <A HREF="overview-FOL.html#resolve">f</A>                              
+retract (1) <A HREF="overview-FOL.html#retract:fol-kb">f</A>                              
+retract-minimal-cnf-clauses (1) <A HREF="overview-FOL.html#retract-minimal-cnf-clauses">f</A>          
+retrieve-action-resolvers (1) <A HREF="overview-plan.html#retrieve-action-resolvers">f</A>            
+retrieve-causal-link-resolvers (1) <A HREF="overview-plan.html#retrieve-causal-link-resolvers">f</A>       
+reuse-cons (1) <A HREF="overview-utils.html#reuse-cons">f</A>                           
+reverse-action-p (1) <A HREF="overview-plan.html#reverse-action-p">f</A>                     
+reverse-operator-p (1) <A HREF="overview-plan.html#reverse-operator-p">f</A>                   
+right-rotate (1) <A HREF="overview-utils.html#right-rotate">f</A>                         
+rms-error (1) <A HREF="overview-utils.html#rms-error">f</A>                            
+round-off (1) <A HREF="overview-utils.html#round-off">f</A>                            
+running-average (1) <A HREF="overview-utils.html#running-average">f</A>                      
+                                           
+                                       <B><A NAME=S>S</A></B>
+same-action-p (1) <A HREF="overview-plan.html#same-action-p">f</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#second">second</A> (9) 
+same-element-p (1) <A HREF="overview-utils.html#same-element-p">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../section/sequence.htm#sequence">sequence</A> (9) 
+same-operator-p-with-unify (1) <A HREF="overview-plan.html#same-operator-p-with-unify">f</A>           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/set.htm#set">set</A> (3) 
+sample-with-replacement (1) <A HREF="overview-utils.html#sample-with-replacement">f</A>              <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/set-diff.htm#set-difference">set-difference</A> (5) 
+sample-without-replacement (1) <A HREF="overview-utils.html#sample-without-replacement">f</A>           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/setfpset.htm#setf">setf</A> (19) 
+satisfy-p (1) <A HREF="overview-plan.html#satisfy-p">f</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/setq.htm#setq">setq</A> (76) 
+set-method-variables (1) <A HREF="overview-plan.html#set-method-variables">f</A>                 <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#seventh">seventh</A> (1) 
+set-task-terms (1) <A HREF="overview-plan.html#set-task-terms">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#sixth">sixth</A> (1) 
+single-var-p (1) <A HREF="overview-plan.html#single-var-p">f</A>                         <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/everysom.htm#some">some</A> (7) 
+skolem-constant (1) <A HREF="overview-FOL.html#skolem-constant">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/sortstab.htm#sort">sort</A> (1) 
+skolemize (1) <A HREF="overview-FOL.html#skolemize">f</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/special-.htm#special-operator-p">special-operator-p</A> (2) 
+square (1) <A HREF="overview-utils.html#square">f</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/sqrtisqr.htm#sqrt">sqrt</A> (2) 
+start (1) <A HREF="overview-plan.html#start">f</A>                                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../section/filesyst.htm#stream">stream</A> (38) 
+starts-with (1) <A HREF="overview-utils.html#starts-with">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsecti/double-q.htm#string">string</A> (28) 
+state (1) <A HREF="overview-plan.html#state">f</A>                                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/stringst.htm#string-equal">string-equal</A> (3) 
+statevar (2) <A HREF="overview-plan.html#statevar">f</A> <A HREF="overview-plan.html#statevar">t</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/string-t.htm#string-trim">string-trim</A> (1) 
+statevar-equalp (1) <A HREF="overview-plan.html#statevar-equalp">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/stringst.htm#string=">string=</A> (1) 
+statevar-equalp-with-unify (1) <A HREF="overview-plan.html#statevar-equalp-with-unify">f</A>           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/stringp.htm#stringp">stringp</A> (28) 
+statevar-opposite-p (1) <A HREF="overview-plan.html#statevar-opposite-p">f</A>                  <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/sublisns.htm#sublis">sublis</A> (2) 
+statevar-unify (1) <A HREF="overview-plan.html#statevar-unify">f</A>                       <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/subseq.htm#subseq">subseq</A> (8) 
+string->infix (1) <A HREF="overview-FOL.html#string->infix">f</A>                        <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/subsetp.htm#subsetp">subsetp</A> (12) 
+stringify (1) <A HREF="overview-utils.html#stringify">f</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../subsubse/sharpsi6.htm#symbol">symbol</A> (6) 
+subst-bindings (12) <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-plan.html#subst-bindings:t">f</A> <A HREF="overview-FOL.html#subst-bindings:t">f</A><A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/symbol-n.htm#symbol-name">symbol-name</A> (6) 
+subst-bindings* (1) <A HREF="overview-FOL.html#subst-bindings*">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/symbolp.htm#symbolp">symbolp</A> (4) 
+sum (1) <A HREF="overview-utils.html#sum">f</A>                                  
+symbol-char? (1) <A HREF="overview-FOL.html#symbol-char?">f</A>                         
+                                           
+                                       <B><A NAME=T>T</A></B>
+task (2) <A HREF="overview-plan.html#task">f</A> <A HREF="overview-plan.html#task">t</A>                               <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/t.htm#t">t</A> (153) 
+task-equalp (1) <A HREF="overview-plan.html#task-equalp">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/firstsec.htm#third">third</A> (6) 
+task-orderings-in (1) <A HREF="overview-plan.html#task-orderings-in">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/type-of.htm#type-of">type-of</A> (2) 
+tautology? (1) <A HREF="overview-FOL.html#tautology?">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/typecase.htm#typecase">typecase</A> (2) 
+tcompound-unify (1) <A HREF="overview-FOL.html#tcompound-unify">f</A>                      <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/typep.htm#typep">typep</A> (1) 
+tell (1) <A HREF="overview-FOL.html#tell:fol-kb">f</A>                                 
+tell-minimal-cnf-clause (1) <A HREF="overview-FOL.html#tell-minimal-cnf-clause">f</A>              
+the-biggest (1) <A HREF="overview-utils.html#the-biggest">f</A>                          
+the-biggest-random-tie (1) <A HREF="overview-utils.html#the-biggest-random-tie">f</A>               
+the-biggest-that (1) <A HREF="overview-utils.html#the-biggest-that">f</A>                     
+the-smallest (1) <A HREF="overview-utils.html#the-smallest">f</A>                         
+the-smallest-random-tie (1) <A HREF="overview-utils.html#the-smallest-random-tie">f</A>              
+the-smallest-that (1) <A HREF="overview-utils.html#the-smallest-that">f</A>                    
+threat (1) <A HREF="overview-plan.html#threat">t</A>                               
+threat-action-p (1) <A HREF="overview-plan.html#threat-action-p">f</A>                      
+transpose (1) <A HREF="overview-utils.html#transpose">f</A>                            
+true (1) <A HREF="overview-utils.html#true">f</A>                                 
+                                           
+                                       <B><A NAME=U>U</A></B>
+undo-temp-changes (1) <A HREF="overview-FOL.html#undo-temp-changes">f</A>                    <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/unionnun.htm#union">union</A> (9) 
+unfiablly-same-type-p (1) <A HREF="overview-utils.html#unfiablly-same-type-p">f</A>                <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/whenunle.htm#unless">unless</A> (10) 
+unifiable-link-p-to (1) <A HREF="overview-plan.html#unifiable-link-p-to">f</A>                  
+unifier (1) <A HREF="overview-FOL.html#unifier">f</A>                              
+unify (1) <A HREF="overview-FOL.html#unify">f</A>                                
+unify-var (1) <A HREF="overview-FOL.html#unify-var">f</A>                            
+unique-find-anywhere-if (1) <A HREF="overview-FOL.html#unique-find-anywhere-if">f</A>              
+unnormalize-statevar (1) <A HREF="overview-plan.html#unnormalize-statevar">f</A>                 
+unsatisfiable-resolver-p (1) <A HREF="overview-plan.html#unsatisfiable-resolver-p">f</A>             
+unsatisfiable-state-p (1) <A HREF="overview-plan.html#unsatisfiable-state-p">f</A>                
+unsatisfiable-statevar-p (1) <A HREF="overview-plan.html#unsatisfiable-statevar-p">f</A>             
+                                           
+                                       <B><A NAME=V>V</A></B>
+variable? (1) <A HREF="overview-FOL.html#variable?">f</A>                            <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/values.htm#values">values</A> (7) 
+variables-in (6) <A HREF="overview-plan.html#variables-in:method">f</A> <A HREF="overview-plan.html#variables-in:task">f</A> <A HREF="overview-plan.html#variables-in:operator">f</A> <A HREF="overview-plan.html#variables-in:statevar">f</A> <A HREF="overview-FOL.html#variables-in:cons">f</A> <A HREF="overview-FOL.html#variables-in:t">f</A>               
+violate-una? (1) <A HREF="overview-FOL.html#violate-una?">f</A>                         
+                                           
+                                       <B><A NAME=W>W</A></B>
+whitespace? (1) <A HREF="overview-FOL.html#whitespace?">f</A>                          <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/warn.htm#warn">warn</A> (1) 
+with-brace (1) <A HREF="overview-plan.html#with-brace">f</A>                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/whenunle.htm#when">when</A> (51) 
+                                           <A HREF="http://www.franz.com/support/documentation/8.1/ansicl/dictentr/../dictentr/with-op0.htm#with-open-file">with-open-file</A> (1) 
+                                           

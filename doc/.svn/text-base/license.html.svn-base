@@ -1,0 +1,77 @@
+<HTML>
+<HEAD>
+<TITLE>Software License Agreement (22-May-2008)</TITLE>
+<!-- Created by: Seiji Koide,  22-May-2008 -->
+<!-- Created by: Peter Norvig,  9-Apr-1998 -->
+<!-- Changed by: Peter Norvig, 23-Apr-1998 -->
+<META http-equiv="Content-Type" content="text/html">
+<META http-equiv="Content-Style-Type" content="text/css">
+<link href="overview.css" rel="stylesheet" type="text/css">
+</HEAD>
+
+<BODY  BGCOLOR="#FFFFFF">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<H1>Software License Agreement</H1>
+
+Copyright &copy; 2008, all rights reserved by Seiji Koide.
+<P>
+The program in Plan module is coded by Seiji Koide. 
+The copyrights of algorithms are reserved by Elsevier Inc., but all rights on these programs in Plan module are reserved by Seiji Koide. 
+<P>
+<B>Limited</B> permission is granted to anyone for only <B>academic use</B> of this software, in source or object code form, on any computer system, and to modify, compile,
+decompile, run, and redistribute it to anyone else, subject to the restrictions that are shown by Peter Norvig as below (see Norvig's restrictions):
+<P>
+The program in FOL module and 'utilities.cl' file is coded by Peter Norvig. The copy of Software License Agreement by Norvig is listed below.
+Several bugs are fixed by Seiji Koide, and fixed parts are commented as much as possible.
+<P>
+The program of 'call/cc' file is coded by Paul Graham. See the <A HREF="http://www.paulgraham.com/onlisp.html">home page</A> or the book and check the license agreement.
+<p>
+<hr>
+<i><small> Author: <a href="mailto:SeijiKoide@aol.com?subject=Planning">Seiji Koide</a>.  Copyright (c) 2008 Seiji Koide. May. 2008 </small></i></body></html>
+<p>
+<p>
+<I>Hereafter the software license agreement for AIMA by Peter Norvig.</I>
+<P>
+Copyright &copy; 1998-2002 by Peter Norvig.
+
+<p>Permission is granted to anyone to use this software, in source or object code form, on any computer system, and to modify, compile,
+decompile, run, and redistribute it to anyone else, subject to the following restrictions:
+
+<ol>
+
+<li> The author makes no warranty of any kind, either expressed or
+implied, about the suitability of this software for any purpose.<p>
+
+<li> The author accepts no liability of any kind for damages or other
+consequences of the use of this software, even if they arise from
+defects in the software.<p>
+
+<li> The origin of this software must not be misrepresented, either by
+explicit claim or by omission.<p>
+
+<li> Altered versions must be plainly marked as such, and must not be
+misrepresented as being the original software. Altered versions may be
+distributed in packages under other licenses (such as the GNU license).
+
+</ol>
+
+<p>If you find this software useful, it would be nice if you let me
+(<a HREF="mailto:peter@norvig.com">peter@norvig.com</A>) know about
+it, and nicer still if you send me modifications that you are willing
+to share. However, you are not required to do so.<p>
+
+<p>
+<hr>
+<p>
+<h2>License License Agreement</h2>
+
+A few people have written to say they like this license agreement and
+want to know if they can use it.  So this is to clarify that you are
+free to use this license agreement, subject to <a
+href="license.html">this license agreement</a>.
+
+<HR WIDTH="100%">
+<BR><I><A HREF="http://www.norvig.com">Peter Norvig</A></I>
+</BODY>
+</HTML>

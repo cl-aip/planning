@@ -1,0 +1,2595 @@
+<HTML>
+<HEAD>
+<TITLE>Planning Subsystem</TITLE> 
+<META http-equiv="Content-Type" content="text/html">
+<META http-equiv="Content-Style-Type" content="text/css">
+<link href="overview.css" rel="stylesheet" type="text/css">
+</HEAD> 
+<BODY bgcolor="#ffffff"> 
+
+<H1>Automated Planning - Theory and Practice</H1>
+<H2>Planning Subsystem</H2>
+<P>
+The <I>Automated Planning - Theory and Practice</I> by Malik 
+Ghallab, Dana Nau, and Paolo Traverso is a textbook for 
+planning published from Morgan Kaufmann and Elsevier, 2004. 
+<br/>
+This program is coded by Seiji Koide, motivated by no real working codes on 
+algorithms that are shown on the book. 
+<br/>
+The copyrights of algorithms are reserved by Elsevier Inc., but 
+all rights on these programs are reserved by Seiji Koide. 
+
+<P><HR size=3><LI><A HREF="#plan\statespace.cl"><B>statespace.cl</B></A>  State Space Module (Section 2.3 Classical Representation, Chapter 4 State-Space Planning)<LI><A HREF="#plan\operator.cl"><B>operator.cl</B></A>  Operator Module (2.3.2 Operators and Actions, 2.5.2 Operators and Actions, Chapter 4 State-Space Planning)<LI><A HREF="#plan\FrwdBkwd.cl"><B>FrwdBkwd.cl</B></A>  Forward-search and Backward-search Module (4.2 Forward Search, 4.3 Backward Search)<LI><A HREF="#plan\STRIPS.cl"><B>STRIPS.cl</B></A>  STRIPS Module (Figure 4.4 and Exercise 4.11)<LI><A HREF="#plan\planspace.cl"><B>planspace.cl</B></A>  Planspace Module (Section 5.2 and 5.3)<LI><A HREF="#plan\PSP.cl"><B>PSP.cl</B></A>  PSP Module (Figure 5.6)<LI><A HREF="#plan\STN.cl"><B>STN.cl</B></A>  STN (Simple Task Network) Planning Module (Chapter 11)</UL>
+
+<A NAME="plan\statespace.cl"><HR>
+<H2>File <A HREF="../plan\statespace.cl">plan\statespace.cl</A></H2></A>
+<H2> State Space Module (Section 2.3 Classical Representation, Chapter 4 State-Space Planning)
+</H2>
+ All rights on programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<P>
+<H2> State
+</H2>
+<P>
+ A <B>state</B> in classical planning is a set of ground atoms of a first-order language. 
+ A state is represented in lisp as a list of literals of the first-order logic, and operated 
+ by set-operation such as intersection, union, set-difference, etc.
+<BR>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*state*"><A HREF="../plan\statespace.cl"><B>*state*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A global var in which initial state is stored.</TD>
+</TR></TBODY></TABLE></DIV> 
+<BR>
+ An atom in first-order languages is expressed by a predicate symbol and arguments.
+ However, an atom of state in state space is represented in functional expression as state 
+ variable. In practice, a predicate symbol is not a function in lisp nor function symbol in logic.
+ It just looks like functional in state space. For example, a location at which a robot is located 
+ is expressed in infix expression like "at(r1) = l1" as string at some time point. It may changed 
+ such as "at(r1) = l2" at next time point. Note that the expression is automatically transformed 
+ to prefix lisp expression like "(= (at r1) l1)" using function fol:logic. See <B>logic</B> in fol module.
+<PRE><CODE>
+   Ex. (logic "load(r1)=c1")  -&gt; (= (load r1) c1)
+   Ex. (logic "~load(r1)=c1") -&gt; (not (= (load r1) c1))
+</CODE></PRE><P>
+ To make a state, call function <B>state</B> with infix notation as string, or prefix notation as 
+ list. Prefix tilder in infix notation denotes a negative literal. Following three expressions 
+ are evaluated to the same result.
+<PRE><CODE>
+   Ex. (state "{at(r1)=l1,load(r1)=nil,cpos(c1)=l1,cpos(c2)=l2}")
+   Ex. (state "{at(r1)=l1,~load(r1),cpos(c1)=l1,cpos(c2)=l2}")
+   Ex. (state '((= (at r1) l1) (not (load r1)) (= (cpos c1) l1) (= (cpos c2) l2)))
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="state"><A HREF="../plan\statespace.cl"><B>state</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes and returns a list of statevar instances. The <I>exp</I> should be either a string 
+   in infix notation or a list in prefix notation. A sequence of literals in infix 
+   notation must be enveloped by braces.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> State Vairable
+</H2>
+<P>
+ A <I>state variable</I> in state space is composed of <I>state-variable symbol</I>, its 
+ <I>arguments</I>, and its <I>value</I>.
+ In this implementation, structure <B>statevar</B> is composed of <I>symbol</I>, <B>args</B>, and <I>val</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="statevar"><A HREF="../plan\statespace.cl"><B>statevar</B></A></A> <I>symbol</I> <I>args</I> <I>val</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+ The statevar structure is printed out as "<I>symbol</I>(<B>args</B>)" if <I>val</I> is true, 
+ "~<I>symbol</I>(<B>args</B>)" if <I>val</I> is false, and "<I>symbol</I>(<B>args</B>)=<I>val</I>" otherwise.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-statevar"><A HREF="../plan\statespace.cl"><B>print-statevar</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints statevar <I>x</I> in infix notation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ Function <B>statevar</B> makes an instance of statevar from <B>exp</B>. See the following examples.
+<PRE><CODE>
+   Ex. (statevar "rloc(r1)=l1")           -&gt; rloc(r1)=l1
+   Ex. (statevar '(= (rloc r1) l1))       -&gt; rloc(r1)=l1
+   Ex. (statevar "~rloc(r1)=l1")          -&gt; ~rloc(r1 l1)
+   Ex. (statevar '(not (= (rloc r1) l1))) -&gt; ~rloc(r1 l1)
+</CODE></PRE><P>
+ No argument for statevar results making a constant as statevar. 
+<PRE><CODE>
+   Ex. &gt; (describe (statevar "constant1()")) 
+       constant1 is a structure of type statevar.  It has these slots:
+        symbol             constant1
+        args               nil
+        val                t
+   Ex. &gt; (describe (statevar "constant1")) 
+       constant1 is a structure of type statevar.  It has these slots:
+        symbol             constant1
+        args               nil
+        val                t
+   Ex. &gt; (statevar-equalp (statevar "constant1()") (statevar "constant1")) -&gt; true
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="statevar"><A HREF="../plan\statespace.cl"><B>statevar</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a statevar instance. If <I>exp</I> is a string, the infix expression is converted to 
+   a prefix expression and recursively called.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="negative-statevar-p"><A HREF="../plan\statespace.cl"><B>negative-statevar-p</B></A></A> (<I>statevar</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>statevar</I> is negative.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="positive-statevar-p"><A HREF="../plan\statespace.cl"><B>positive-statevar-p</B></A></A> (<I>statevar</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>statevar</I> is positive.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="single-var-p"><A HREF="../plan\statespace.cl"><B>single-var-p</B></A></A> (<I>statevar</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>statevar</I> has only one state variable, or 
+   if <I>statevar</I> has two arguments in unnormalized expression.
+   See <B>normalize-statevar</B> and <B>unnormalize-statevar</B>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Unsatisfiability of State
+</H2>
+ If two statevars are inconsistent such as "on(c1,pallet)" and "~on(c1,pallet)", it is called 
+ <I>unsatisfiable</I> condition.
+ If <B>state</B> includes any <I>unsatisfiable</I> condition or any unsatisfiable pair of statevars, 
+ the <B>state</B> is called <I>unsatisfiable</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unsatisfiable-state-p"><A HREF="../plan\statespace.cl"><B>unsatisfiable-state-p</B></A></A> (<I>state</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>state</I> is unsatisfiable.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Ground Literal
+</H2>
+<P>
+ A state variable is called <I>ground</I>, if every argument in a state variable is a constant symbol.
+ Note that in this implementation variable symbols in the first-order language is expressed as a lisp 
+ symbol that starts with '?' or '$' character. Otherwise, lisp symbols in statevar arguments are 
+ constant terms. See, unify module in FOL directory. 
+<PRE><CODE>
+   Ex. (ground-p (statevar '(= (rloc r1) l1))) --&gt; true
+   Ex. (ground-p (statevar "rloc(r)=l1"))      --&gt; false
+   Ex. (ground-p (statevar '(= (rloc ?r) l1))) --&gt; false
+</CODE></PRE><P>
+ Note here that symbols expressed as one character in infix notation turn out variables. For example, 
+ for "at(r,l)" "r" and "l" are variables in logics, and for "at(r1,l1)" "r1" and "l1" are constant terms.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ground-p:statevar"><A HREF="../plan\statespace.cl"><B>ground-p</B></A></A> (<I>(x
+                                                                                                    statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if statevar <I>x</I> does not include any variable.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> State Variable Expression to Normal Literal Expression
+</H2>
+<P>
+ A statevar "pred(x,y)=val" is expressed as "pred(x,y,val)" in normal first-order literal 
+ formula, of which the truth value is assigned true. Therefore, a statevar "pred(x,y)=val" 
+ can be transformed to "pred(x,y,val)=t" as positive literal. Similary, a negative literal 
+ "~pred(x,y)" can be transformed to "pred(x,y)=nil" in this program. All statevars must be 
+ tranformed to noramal literal expression before unification.
+<PRE><CODE>
+   Ex. (statevar "rloc(r1)=l1")                       -&gt; rloc(r1)=l1
+   Ex. (normalize-statevar (statevar "rloc(r1)=l1"))  -&gt; rloc(r1 l1)
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="normalize-statevar"><A HREF="../plan\statespace.cl"><B>normalize-statevar</B></A></A> (<I>statevar</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>transforms <I>statevar</I> into normal literal expression assigned truth value.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unnormalize-statevar"><A HREF="../plan\statespace.cl"><B>unnormalize-statevar</B></A></A> (<I>statevar</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>transforms <I>statevar</I> into the form that has a value except t.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Equality of State Variable
+</H2>
+<P>
+ There are four predicate functions for equality testing for statevars.
+<BR>
+ <B>statevar-equalp</B> is available as normal one in definition of state variable.
+<PRE><CODE>
+   Ex. (statevar-equalp 
+                  (statevar "load(r1) = c3") (statevar "load(r1,c3)"))  -&gt; true
+   Ex. (statevar-equalp 
+                  (statevar "load(r1)") (statevar "load(r1,c3)"))       -&gt; false
+   Ex. (statevar-equalp 
+                  (statevar "~load(r1)") (statevar "~load(r1,c3)"))     -&gt; true
+   Ex. (statevar-equalp 
+                  (statevar "~load(r1)=c3") (statevar "load(r1,c3)"))   -&gt; false
+</CODE></PRE><P>
+ <B>pseudo-statevar-equalp</B> is prepared for matching with ignoring statevar's value. 
+ This is useful to test to match positive state and negative precond.
+<PRE><CODE>
+   Ex. (pseudo-statevar-equalp 
+                  (statevar "~load(r1)") (statevar "load(r1) = c3")) -&gt; true
+   Ex. (pseudo-statevar-equalp 
+                  (statevar "~load(r1)") (statevar "~load(r1,c3)"))  -&gt; true
+   Ex. (pseudo-statevar-equalp 
+                  (statevar "load(r1)") (statevar "load(r1,c3)"))    -&gt; false
+   Ex. (pseudo-statevar-equalp 
+                  (statevar "~load(r1)") (statevar "~load(r1,c3)"))  -&gt; true
+</CODE></PRE><P>
+ <B>statevar-equalp-with-unify</B> returns true if two states are unifiable and equal as a 
+ result of appopriate substitution.
+<PRE><CODE>
+   Ex. (statevar-equalp-with-unify 
+                  (statevar "load(r1) = c3") (statevar "load(r,c)"))  -&gt; true
+   Ex. (statevar-equalp-with-unify 
+                  (statevar "~load(r1) = c3") (statevar "load(r,c)")) -&gt; false
+   Ex. (statevar-equalp-with-unify 
+                  (statevar "at($r,$l)") (statevar "at(r1,l1)"))      -&gt; true
+   Ex. (statevar-equalp-with-unify 
+                  (statevar "~at($r,$l)") (statevar "at(r1,l1)"))     -&gt; false
+</CODE></PRE><P>
+ <B>pseudo-statevar-equalp-with-unify</B> returns true if two states are equal as a result of 
+ appopriate unification.
+<PRE><CODE>
+   Ex. (pseudo-statevar-equalp-with-unify
+                  (statevar "load(r1) = c3") (statevar "load(r,c)"))  -&gt; true
+   Ex. (pseudo-statevar-equalp-with-unify 
+                  (statevar "~load(r1) = c3") (statevar "load(r,c)")) -&gt; true
+   Ex. (pseudo-statevar-equalp-with-unify 
+                  (statevar "at($r,$l)") (statevar "at(r1,l1)"))      -&gt; true
+   Ex. (pseudo-statevar-equalp-with-unify 
+                  (statevar "~at($r,$l)") (statevar "at(r1,l1)"))     -&gt; true
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="statevar-equalp"><A HREF="../plan\statespace.cl"><B>statevar-equalp</B></A></A> (<I>s1</I> <I>s2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>s1</I> and <I>s2</I> is equal in semantics of state variable, otherwise false.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="pseudo-statevar-equalp"><A HREF="../plan\statespace.cl"><B>pseudo-statevar-equalp</B></A></A> (<I>s1</I> <I>s2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>this function does not care about truth value asigned to <I>s1</I> and <I>s2</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="statevar-equalp-with-unify"><A HREF="../plan\statespace.cl"><B>statevar-equalp-with-unify</B></A></A> (<I>s1</I> <I>s2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>s1</I> and <I>s2</I> is unifiable and equal with appropriate substitution.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="pseudo-statevar-equalp-with-unify"><A HREF="../plan\statespace.cl"><B>pseudo-statevar-equalp-with-unify</B></A></A> (<I>s1</I> <I>s2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>s1</I> and <I>s2</I> is unifiable and equal with appropriate substitution. 
+   Note that this function does not care about assigned truth values.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Unsatisfiability of Statevars
+</H2>
+ If two statevars are strictly equal except their truth value, and both truth values are opposite,
+ then, the pair of statevars is called <I>unsatisfiable</I>. 
+ Namely, "pred(a,b,c)" and "~pred(a,b,c)" are unsatisfiable.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="statevar-opposite-p"><A HREF="../plan\statespace.cl"><B>statevar-opposite-p</B></A></A> (<I>s1</I> <I>s2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if truth value of <I>s1</I> and <I>s2</I> is opposite in semantics of state variable.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unsatisfiable-statevar-p"><A HREF="../plan\statespace.cl"><B>unsatisfiable-statevar-p</B></A></A> (<I>s1</I> <I>s2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>s1</I> and <I>s2</I> make a unsatisfiable pair. This is same as statevar-opposite-p.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Unification for State Variable
+</H2>
+ Following methods work in a part of function unify. See unify in fol module in detail.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:statevar"><A HREF="../plan\statespace.cl"><B>compound-unify?</B></A></A> (<I>(x
+                                                                                                                  statevar)</I> <I>(y
+                                                                                                                                    statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>trivially returns true because <I>x</I> and <I>y</I> are instances of statevar.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify:statevar"><A HREF="../plan\statespace.cl"><B>compound-unify</B></A></A> (<I>(x
+                                                                                                                statevar)</I> <I>(y
+                                                                                                                                  statevar)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns bindings as a result of unification of <I>x</I> and <I>y</I>. Statevars in unification 
+   must be normalized.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="opposite-compound-unify:statevar"><A HREF="../plan\statespace.cl"><B>opposite-compound-unify</B></A></A> (<I>(x
+                                                                                                                                  statevar)</I> <I>(y
+                                                                                                                                                    statevar)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns bindings as a result of unification, if both truth values are  
+   opposite. This is used for threat computing in PSP module.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\statespace.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                         statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>substitutes <I>x</I> with <I>bindings</I> and returns the result.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variables-in:statevar"><A HREF="../plan\statespace.cl"><B>variables-in</B></A></A> (<I>(x
+                                                                                                            statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns variables in <I>x</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Simple but very often used utilities
+</H2>
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="op:statevar"><A HREF="../plan\statespace.cl"><B>op</B></A></A> (<I>(exp
+                                                                                        statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="args:statevar"><A HREF="../plan\statespace.cl"><B>args</B></A></A> (<I>(exp
+                                                                                            statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="arg1:statevar"><A HREF="../plan\statespace.cl"><B>arg1</B></A></A> (<I>(exp
+                                                                                            statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="arg2:statevar"><A HREF="../plan\statespace.cl"><B>arg2</B></A></A> (<I>(exp
+                                                                                            statevar)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<A NAME="plan\operator.cl"><HR>
+<H2>File <A HREF="../plan\operator.cl">plan\operator.cl</A></H2></A>
+<H2> Operator Module (2.3.2 Operators and Actions, 2.5.2 Operators and Actions, Chapter 4 State-Space Planning)
+</H2>
+ All rights on programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<P>
+<H2> Operators
+</H2>
+<P>
+ A <I>planning operator</I> <I>o</I> is defind as a triple &lt;name(<I>o</I>), precond(<I>o</I>), effects(<I>o</I>)&gt;.
+ An <I>operator name</I> is a syntactic expression of the form "<I>symbol</I>(<I>parms</I>)".
+ An <I>operator precond</I> and <I>effects</I> are a conjunctive set of literals.
+<P>
+ An <I>operator name</I> is implemented as structure <B>ope-name</B> in lisp, which has 
+ <I>symbol</I> slot and <I>parms</I> slot.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ope-name"><A HREF="../plan\operator.cl"><B>ope-name</B></A></A> <I>symbol</I> <I>parms</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-ope-name"><A HREF="../plan\operator.cl"><B>print-ope-name</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints <B>ope-name</B> like ''move($r $l $m)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ope-name-equal-p"><A HREF="../plan\operator.cl"><B>ope-name-equal-p</B></A></A> (<I>op-name1</I> <I>op-name2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>op-name1</I> and <I>op-name2</I> are equal as ope-name definition.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ope-name"><A HREF="../plan\operator.cl"><B>ope-name</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes an instance of <B>ope-name</B> from <I>exp</I> and returns it.
+   If <I>exp</I> is a string, it should be in infix notation like ''move(r,l,m)'', otherwise it should be 
+   a list in prefix operator name notation like ''(move $r $l $m)''.
+   Note that a single character in string turns out an object variable with its name in logics.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ An <B>operator</B> in lisp is a structure composed of <I>name</I>, <I>comment</I>, <I>precond</I>, and <I>effects</I>.
+<BR>
+<UL>
+<LI>An <B>operator-name</B> is an instance of structure <B>ope-name</B>.
+<LI>An <B>operator-comment</B> should be a string or nil.
+<LI>An <B>operator-precond</B> is a set of literals in first-order logics with implicit conjunction.
+<LI>An <B>operator-effects</B> is a set of literals in first-order logics with implicit conjunction.
+</UL>
+<BR>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator"><A HREF="../plan\operator.cl"><B>operator</B></A></A> <I>name</I> <I>comment</I> <I>precond</I> <I>effects</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-operator"><A HREF="../plan\operator.cl"><B>print-operator</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints <B>operator</B> such as ''(operator <I>name</I> <I>comment</I> (:precond <I>precond</I>) (:effects <I>effects</I>)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator-symbol"><A HREF="../plan\operator.cl"><B>operator-symbol</B></A></A> (<I>operator</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns <B>ope-name-symbol</B> of <I>operator</I>'s name.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator-variables"><A HREF="../plan\operator.cl"><B>operator-variables</B></A></A> (<I>operator</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns <B>ope-name-parms</B> of <I>operator</I>'s name.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ Function <B>operator</B> creates an operator instance.
+<PRE><CODE>
+   Ex. (operator "move(r,l,m)"
+                 :comment "robot r moves from location l to an adjacent location m."
+                 :precond "adjacent(l,m),at(r,l),~occupied(m)"
+                 :effects "at(r,m),occupied(m),~occupied(l),~at(r,l)")
+     -&gt; (operator move($r $l $m)
+                  "robot r moves from location l to an adjacent location m."
+                  (:precond (adjacent $l $m) (at $r $l) (not (occupied $m)))
+                  (:effects (at $r $m) (occupied $m) (not (occupied $l)) (not (at $r $l))))
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator"><A HREF="../plan\operator.cl"><B>operator</B></A></A> (<I>ope-name</I> <I>&key</I> <I>precond</I> <I>effects</I> <I>comment</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes an instance of <B>operator</B> with <I>ope-name</I>, <I>precond</I>, <I>effects</I>, and <I>comment</I>. 
+   and returns it. Each parameter in <I>precond</I> and <I>effects</I> may be in prefix notation 
+   in lisp and in infix notation in string. <I>precond</I> and <I>effects</I> do not require to 
+   envelop it with braces. This function does not add the result into *operators*.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator-equal-p"><A HREF="../plan\operator.cl"><B>operator-equal-p</B></A></A> (<I>operator1</I> <I>operator2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>operator1</I> and <I>operator2</I> are equal in the operator definition.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="with-brace"><A HREF="../plan\operator.cl"><B>with-brace</B></A></A> (<I>str</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>trims white spaces at the both ends of <I>str</I> 
+   and envelops it with braces if braces do not exist, then returns the result.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ All operators in system should be stored in a global var *operators*. Macro <B>defoperator</B> 
+ do it. The <B>defoperator</B> can accept infix notations. See the following example.
+<PRE><CODE>
+ (defoperator "move(r,l,m)"
+     "robot &lt;r&gt; moves from location &lt;l&gt; to an adjacent location &lt;m&gt;"
+   :precond "adjacent(l,m),at(r,l),~occupied(m)"
+   :effects "at(r,m),occupied(m),~occupied(l),~at(r,l)")
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*operators*"><A HREF="../plan\operator.cl"><B>*operators*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A global var that stores operators defined.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="defoperator"><A HREF="../plan\operator.cl"><B>defoperator</B></A></A> (<I>ope-name</I> <I>&rest</I> <I>initargs</I>)</U></TD>
+<TD width="60" align="right">[macro]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>defines an operator and pushes the result into *operators*.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="find-operator"><A HREF="../plan\operator.cl"><B>find-operator</B></A></A> (<I>symbol</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>finds the operator of which operator symbol is <I>symbol</I> and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="positive-precond"><A HREF="../plan\operator.cl"><B>positive-precond</B></A></A> (<I>precond</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves positive literals from <I>precond</I> and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="negative-precond"><A HREF="../plan\operator.cl"><B>negative-precond</B></A></A> (<I>precond</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves negative literals from <I>precond</I> and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="positive-effects"><A HREF="../plan\operator.cl"><B>positive-effects</B></A></A> (<I>effects</I> <I>precond</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves positive literals from <I>effects</I> and returns it.
+   <I>precond</I> is ignored.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="negative-effects"><A HREF="../plan\operator.cl"><B>negative-effects</B></A></A> (<I>effects</I> <I>precond</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves negative literals from <I>effects</I> and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Unification for Operators
+</H2>
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:ope-name"><A HREF="../plan\operator.cl"><B>compound-unify?</B></A></A> (<I>(x
+                                                                                                                ope-name)</I> <I>(y
+                                                                                                                                  ope-name)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify:ope-name"><A HREF="../plan\operator.cl"><B>compound-unify</B></A></A> (<I>(x
+                                                                                                              ope-name)</I> <I>(y
+                                                                                                                                ope-name)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:operator"><A HREF="../plan\operator.cl"><B>compound-unify?</B></A></A> (<I>(x
+                                                                                                                operator)</I> <I>(y
+                                                                                                                                  operator)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify:operator"><A HREF="../plan\operator.cl"><B>compound-unify</B></A></A> (<I>(x
+                                                                                                              operator)</I> <I>(y
+                                                                                                                                operator)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\operator.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                       ope-name)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\operator.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                       operator)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variables-in:operator"><A HREF="../plan\operator.cl"><B>variables-in</B></A></A> (<I>(x
+                                                                                                          operator)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<H2> Reverse Operator
+</H2>
+ If effects of operator <I>A</I> is completely opposite of effects of operator <I>B</I>, 
+ then <I>A</I> is called reverse operator of <I>B</I>.
+ Note that exact matching without unification is needed.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="reverse-operator-p"><A HREF="../plan\operator.cl"><B>reverse-operator-p</B></A></A> (<I>op1</I> <I>op2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<H2> Actions
+</H2>
+<P>
+ An action is a ground instance (via substitution for operator variables) of an operator. 
+ We capture an operator which does not have any variables in precond. 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ground-p:operator"><A HREF="../plan\operator.cl"><B>ground-p</B></A></A> (<I>(x
+                                                                                                  operator)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if precond in <I>x</I> does not include any variable.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ In lisp, <B>action</B> is an extended structure of <B>operator</B>, and <B>action-name</B> is also an extention of <B>ope-name</B>.
+ However, there is no difference between the slot-access function of <B>operator</B> and <B>action</B>, for example, 
+ <B>action-precond</B> and <B>operator-precond</B> are effectively same, because there is no additional slots for <B>action</B> 
+ to <B>operator</B>. 
+<BR>
+ So, the accessor for <B>action</B> is same as <B>operator</B> in practice. Strictly, <B>action</B> means completely ground 
+ <B>operator</B>, but we often call partially instantiated <B>operator</B> <B>action</B> and use slot-accessors for <B>action</B> 
+ instead of slot-accessors for <B>operator</B>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="action-name"><A HREF="../plan\operator.cl"><B>action-name</B></A></A> </U></TD>
+<TD width="144" align="right">[subtype ope-name]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="action"><A HREF="../plan\operator.cl"><B>action</B></A></A> </U></TD>
+<TD width="144" align="right">[subtype operator]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="action"><A HREF="../plan\operator.cl"><B>action</B></A></A> (<I>ope-name</I> <I>&key</I> <I>precond</I> <I>effects</I> <I>comment</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>same as operator but makes an instance of action.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="action-equal-p"><A HREF="../plan\operator.cl"><B>action-equal-p</B></A></A> (<I>action1</I> <I>action2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>same as <B>operator-equal-p</B>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="same-action-p"><A HREF="../plan\operator.cl"><B>same-action-p</B></A></A> (<I>action1</I> <I>action2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>action1</I> and <I>action2</I> has same <B>action-name</B> or <B>ope-name</B>, 
+   even if two are not equal as <B>action</B> or <B>operator</B>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="same-operator-p-with-unify"><A HREF="../plan\operator.cl"><B>same-operator-p-with-unify</B></A></A> (<I>relevant1</I> <I>relevant2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>Is these operator name same with unification?</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="make-action-from"><A HREF="../plan\operator.cl"><B>make-action-from</B></A></A> (<I>operator</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes an action from <I>operator</I> with substitution of <I>bindings</I>.
+   If the substitution does not make operator ground, nil is returned.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="instantiate-relevant-from"><A HREF="../plan\operator.cl"><B>instantiate-relevant-from</B></A></A> (<I>operator</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes partially instantiated action from <I>operator</I> with substitution by <I>bindings</I>.
+   Note that this function creates an action if ground, otherwise creates an operator.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Applicability of Action
+</H2>
+<P>
+ If positive literals in <I>precond</I> in <B>action</B> is a subset of <B>state</B>, and any 
+ negative literal in <I>precond</I> does not meet any positive literal in <B>state</B>,
+ the <B>action</B> is applicable to <B>state</B>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="applicable-action-p"><A HREF="../plan\operator.cl"><B>applicable-action-p</B></A></A> (<I>action</I> <I>state</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if positive precond in <I>action</I> makes a subset of <I>state</I>, and 
+   null intersection between negative precond in <I>action</I> and positive literals in <I>state</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<P>
+<A NAME="plan\FrwdBkwd.cl"><HR>
+<H2>File <A HREF="../plan\FrwdBkwd.cl">plan\FrwdBkwd.cl</A></H2></A>
+<H2> Forward-search and Backward-search Module (4.2 Forward Search, 4.3 Backward Search)
+</H2>
+ All rights on programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<H2> Goal
+</H2>
+ In state space planning, a goal in planning is given as a set of state variables. To set a goal, 
+ set a set of statevars to global var *goal*. See the following example.
+<PRE><CODE>
+ (setq *goal* (state "{at(r1,loc1),loaded(r1,c3)}"))
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*goal*"><A HREF="../plan\FrwdBkwd.cl"><B>*goal*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>goal in a planning problem</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Forward Search (Figure 4.1)
+</H2>
+<P>
+ Note that forward-search finds possibly applicable actions in <I>operators</I> and instantiates 
+ them against current <B>state</B> and choose one of applicable actions against 
+ <B>state</B>. No action is chosen that once occured in the past state in this implementation. 
+ It is not a complete solution for the problem of infinite loop by repeated action but simple 
+ and easy to avoid unterminate computation. 
+ To plan in forward-search, see the following example of Figure 2.3.
+<PRE><CODE>
+ (setq *state*
+       (state
+        "{attach(p1,loc1),in(c1,p1),top(c1,p1),on(c1,pallet),
+          attach(p2,loc1),in(c2,p2),top(c2,p2),on(c2,pallet),
+          belong(crane1,loc1),holding(crane1,c3),adjacent(loc1,loc2),
+          adjacent(loc2,loc1),at(r1,loc2),occupied(loc2),unloaded(r1)}"))
+ (defoperator "move(r,l,m)"
+     "robot &lt;r&gt; moves from location &lt;l&gt; to an adjacent location &lt;m&gt;"
+   :precond "adjacent(l,m),at(r,l),~occupied(m)"
+   :effects "at(r,m),occupied(m),~occupied(l),~at(r,l)")
+ (defoperator "load(k,l,c,r)"
+     "crane &lt;k&gt; at location &lt;l&gt; loads container &lt;c&gt; onto robot &lt;r&gt;"
+   :precond "belong(k,l),holding(k,c),at(r,l),unloaded(r)"
+   :effects "empty(k),~holding(k,c),loaded(r,c),~unloaded(r)")
+ (setq *goal* (state "{at(r1,loc1),loaded(r1,c3)}"))
+ (forward-search *operators* *state* *goal* ())
+ -&gt; (move(r1 loc2 loc1) load(crane1 loc1 c3 r1))
+</CODE></PRE><P>
+<BR>
+ To implement the undeterministic choice of actions and backtracking in search, the continuable 
+ function that provides the functionality of continuation in lisp is used. See callcc module in 
+ detail.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="forward-search"><A HREF="../plan\FrwdBkwd.cl"><B>forward-search</B></A></A> (<I>operators</I> <I>state</I> <I>goal</I> <I>plan</I>)</U></TD>
+<TD width="155" align="right">[continuable function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>This program searches <I>state</I> that satisfies <I>goal</I>, and returns an accumulated 
+         sequence of actions or <I>plan</I> that achieves <I>goal</I>. Starting at initial <I>state</I>, 
+         finding actions that are applicable to <I>state</I>, and this continuable function 
+         nondeterministically chooses one of applicable actions, then progresses <I>state</I> with 
+         the application of the action, and recursively calls with new <I>state</I> and partial <I>plan</I>.
+         Here, <I>state</I> is a set of ground statevars but <I>goal</I> may include variables. 
+         If there is no applicable action, then the search is failed and the program 
+         control backtracks up to the next choice of applicable actions. 
+         Exactly, ''forward-search'' is a macro name and ''=forward-search'' is actually a 
+         function name. Both together pretends to support the continuation like Scheme. 
+         See callcc module in detail.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Satify Goal
+</H2>
+<P>
+ When there is a substitution such that every positive literal of <I>goal</I> is in <B>state</B>, 
+ and no negative literals in <I>goal</I> match positive <B>state</B>, 
+ (and no positive literals in <I>goal</I> match negative <B>state</B>,) we say that <B>state</B> satisfies 
+ <I>goal</I>.
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="satisfy-p"><A HREF="../plan\FrwdBkwd.cl"><B>satisfy-p</B></A></A> (<I>state</I> <I>goal</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>tests <I>state</I> satisfies <I>goal</I>, and returns unifiable bindings if so, otherwise returns false.
+   Note that <I>goal</I> may include variables any time, <I>state</I> does not include any variables in 
+   forward search but may include in backward search.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Instantiation in Progression
+</H2>
+<P>
+ <B>operator-unify-for-progression</B> makes unification between <B>operator</B>'s precond and <B>state</B>,
+ and then partially instantiates an <B>operator</B> with the substitutions of unification bindings.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator-unify-for-progression"><A HREF="../plan\FrwdBkwd.cl"><B>operator-unify-for-progression</B></A></A> (<I>operator</I> <I>state</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>computes multiple substitutions between <I>operator</I>'s precond and <I>state</I>, 
+   then instantiates <I>operator</I> with computed substitutions. Note that this function 
+   computes possible multi-substitutions for <I>operator</I> and <I>state</I>, and such 
+   multi-substitutions generate possible multi-instantiations in pallarel, 
+   so this function returns a set of completely instantiated <I>operator</I>s.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ In unification for progression, every literal in precond of operator must be satisfied by state with 
+ appropriate bindings. Thus, the point is a computation for bindings between precond and state.
+ The following two functions <B>precond-unify</B> and <B>statevar-unify</B> produce multiple possibilities of
+ substitutions. For example, "at(r,l)" in precond matches "at(r1,l1)" and "at(r2,l2)" in 
+ state. So, this unification produces two possible substitutions (r/r1, l/l1) and (r/r2, l/l2). 
+ Then, such multiple possibilities must be inherited to the unification of next literals in precond. 
+ See the following example, in which a variable $m has two possible 
+ bindings ($m . l2) and ($m . l1) in the correspondence of two binding possibilities on $l and $r.
+<PRE><CODE>
+ Ex.
+   (precond-unify (state "{at(r,l)}")
+                  (state "{at(r1,l1),at(r2,l2),adjacent(l1,l2),adjacent(l2,l1)}")
+                  +no-bindings+)
+   -&gt; ((($l . l1) ($r . r1)) (($l . l2) ($r . r2)))
+   (precond-unify (state "{at(r,l),adjacent(l,m)}")
+                  (state "{at(r1,l1),at(r2,l2),adjacent(l1,l2),adjacent(l2,l1)}")
+                  +no-bindings+)
+   -&gt; ((($m . l2) ($l . l1) ($r . r1)) (($m . l1) ($l . l2) ($r . r2)))
+</CODE></PRE><P>
+<P>
+ Next, suppose planning for block-building. Let a given precond be a condition of bridging two blocks 
+ e.g., "on(b,c),on(b,d)" where "b", "c", and "d" denote blocks. Then, if we have a condition "on(b3,b1),on(b3,b2)" 
+ in state, two set of unification bindings, (d/b2, c/b1, b/b3) or (d/b1, c/b2, b/b3) are deduced, but 
+ (d/b1, c/b1, b/b3) and (d/b2, c/b2, b/b3) should not be deduced, because block "c" and "d" in the precond 
+ "on(b,c),on(b,d)" denotes different objects. Namely the unification of a precond must obey the Unique Name 
+ Assumption (UNA) with respect to one precond.
+<PRE><CODE>
+ Ex.
+   (precond-unify (state "{on(b,c),on(b,d)}") (state "{on(b3,b1),on(b3,b2)}")
+                  +no-bindings+)
+   Violate UNA:$d b1 (($c . b1) ($b . b3))
+   Violate UNA:$d b2 (($c . b2) ($b . b3))
+   -&gt; ((($d . b2) ($c . b1) ($b . b3)) (($d . b1) ($c . b2) ($b . b3)))
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="precond-unify"><A HREF="../plan\FrwdBkwd.cl"><B>precond-unify</B></A></A> (<I>precond</I> <I>state</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of possible new bindings between <I>precond</I> and <I>state</I>.
+   Every positive <I>precond</I> must meet <I>state</I> with unification, and every 
+   negative <I>precond</I> must not meet <I>state</I> with binding constraint. 
+   So, positive <I>precond</I> produces possible bindings and negative <I>precond</I> 
+   filters unsatisfiable bindings.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="statevar-unify"><A HREF="../plan\FrwdBkwd.cl"><B>statevar-unify</B></A></A> (<I>statevar</I> <I>state</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of possible bindings of statevar against <I>state</I>.
+   This function collects all possibilities for <I>state</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="opposite-statevar-unify"><A HREF="../plan\FrwdBkwd.cl"><B>opposite-statevar-unify</B></A></A> (<I>statevar</I> <I>state</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of possible bindings of positive(negative) <I>statevar</I> against negative(positive) <I>state</I>.
+   If there is no unifiable element in <I>state</I> with <I>bindings</I> constraint, returns false.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Progress State
+</H2>
+<P>
+ With <I>add-list</I> and <I>del-list</I>, a planner makes a progress of <B>state</B> in state space.
+ Namely, a <B>state</B> is altered to the union of <I>add-list</I> and set difference (<B>state</B> - <I>del-list</I>).
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="progress-action"><A HREF="../plan\FrwdBkwd.cl"><B>progress-action</B></A></A> (<I>action</I> <I>state</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns the new state produced by applying action to the state.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="progress"><A HREF="../plan\FrwdBkwd.cl"><B>progress</B></A></A> (<I>state</I> <I>add-list</I> <I>del-list</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>computes a union of <I>add-list</I> and set difference (<I>state</I> - <I>del-list</I>)</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="remove-action-occured"><A HREF="../plan\FrwdBkwd.cl"><B>remove-action-occured</B></A></A> (<I>actions</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>removes any action in <I>actions</I> such that once occured in <I>plan</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Lifted Backward Search (Figure 4.3)
+</H2>
+<P>
+ In backward search, relevant operators to given <I>goal</I> are retrieved from a set of <I>operators</I>.
+ Then, one of relevants is nondeterministically chosen and <I>goal</I> is inversely progressed (regressed) 
+ toward initial <B>state</B>, then <I>goal</I> is updated to new subgoal with partial substitution by bindings. 
+ <B>lifted-backward-search</B> is recursively called with the new sub-goal as <I>goal</I>. The relevant operator 
+ retrieved is instantiated with substitution of unifier between its effects and the goal. The 
+ instantiated operators are accumulated in recursive calls of <B>lifted-backward-search</B>, then 
+ accumulated and instantiated action sequence or <B>plan</B> is returned when initial <B>state</B> satisfies 
+ <I>goal</I>(instantiated sub-goal). 
+<P>
+ If you want to set breakpoint to this function, use function name <I> =lifted-backward-search </I>
+ rather than <B>lifted-backward-search</B>.
+ To plan in lifted-backward-search, see the following example of Figure 2.3.
+<PRE><CODE>
+ (setq *state*
+       (state
+        "{attach(p1,loc1),in(c1,p1),top(c1,p1),on(c1,pallet),
+          attach(p2,loc1),in(c2,p2),top(c2,p2),on(c2,pallet),
+          belong(crane1,loc1),holding(crane1,c3),adjacent(loc1,loc2),
+          adjacent(loc2,loc1),at(r1,loc2),occupied(loc2),unloaded(r1)}"))
+ (defoperator "move(r,l,m)"
+     "robot &lt;r&gt; moves from location &lt;l&gt; to an adjacent location &lt;m&gt;"
+   :precond "adjacent(l,m),at(r,l),~occupied(m)"
+   :effects "at(r,m),occupied(m),~occupied(l),~at(r,l)")
+ (defoperator "load(k,l,c,r)"
+     "crane &lt;k&gt; at location &lt;l&gt; loads container &lt;c&gt; onto robot &lt;r&gt;"
+   :precond "belong(k,l),holding(k,c),at(r,l),unloaded(r)"
+   :effects "empty(k),~holding(k,c),loaded(r,c),~unloaded(r)")
+ (setq *goal* (state "{at(r1,loc1),loaded(r1,c3)}"))
+ (lifted-backward-search *operators* *state* *goal* ())
+ -&gt; (move(r1 loc2 loc1) load(crane1 loc1 c3 r1))
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="lifted-backward-search"><A HREF="../plan\FrwdBkwd.cl"><B>lifted-backward-search</B></A></A> (<I>operators</I> <I>state</I> <I>goal</I> <I>plan</I>)</U></TD>
+<TD width="155" align="right">[continuable function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD><I>goal</I> may include logic variable symbols. Therefore, any operator is standardized in 
+         variables, namely, renamed with respect to variables before unification to <I>goal</I>. </TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Unification in Regression
+</H2>
+<P>
+ In unification for regression, a part of effects is unified to goal. The unified conditions 
+ should be supported at the precond of the operator, then the precond and effects are partially 
+ instantiated with the computed unification bindings. The un-unified conditions and the partially 
+ instantiated precond are unioned and captured as new subgoal in regression process. Thus, the 
+ unsatisfied fragments of goal must be instantiated or unified later in regressive planning process. 
+<P>
+ For example, for goal "at(r1,loc1),loaded(r1,c3)", unification of effects in operator load(k,l,c,r), 
+ "empty(k),~holding(k,c),loaded(r,c),~unloaded(r)" produces bindings (r/r1, c/c3), and this 
+ bindings instantiate the effects to "empty(k),~holding(k,c),loaded(r1,c3),~unloaded(r1)" and 
+ instantiates the precond "belong(k,l),holding(k,c),at(r,l),unloaded(r)" to 
+ "belong(k,l),holding(k,c3),at(r1,l),unloaded(r1)". Thus, the union of remained goal "at(r1,loc1)" and 
+ the instantiated precond are set as subgoal.
+<BR>
+ Note that the unification is lastly done between the initial state and the last subgoal, and this last 
+ unifier must be reflected to every actions in sequence so far or <B>plan</B>. 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="operator-unify-for-regression"><A HREF="../plan\FrwdBkwd.cl"><B>operator-unify-for-regression</B></A></A> (<I>operator</I> <I>goal</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns multiple set of bindings, of which one set is the result of possible 
+   unification of <I>operator</I> to <I>goal</I> with <I>bindings</I>. At first, <I>operator</I>'s 
+   effects are attempted to unify <I>goal</I> with <I>bindings</I> (and it generates a set 
+   of new possible bindings), then <I>operator</I>'s precond are unified 
+   with the constraint of each bindings newly generated .</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="partial-unify"><A HREF="../plan\FrwdBkwd.cl"><B>partial-unify</B></A></A> (<I>cond</I> <I>goal</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of possible bindings of a part of <I>cond</I> against <I>goal</I>. This function allows to match 
+   a possible element in <I>cond</I> to a possible element in <I>goal</I>. Unmatched elements are remained
+   in both of <I>cond</I> and <I>goal</I>. Any negative effect must not match to positive <I>goal</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Relevant to Goal
+</H2>
+ An operator and a set of bindings by which effects of the operator partially match to goal 
+ is called <B>relevant</B>. In regressive planning process, the relevant 
+ (which is a pair of operator and bindings) to goal is computed and one relevant is 
+ undeterministically chosen.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant"><A HREF="../plan\FrwdBkwd.cl"><B>relevant</B></A></A> <I>operator</I> <I>bindings</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant"><A HREF="../plan\FrwdBkwd.cl"><B>relevant</B></A></A> (<I>operator</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes an instance of <B>relevant</B> with <I>operator</I> and <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="goal-relevant-p"><A HREF="../plan\FrwdBkwd.cl"><B>goal-relevant-p</B></A></A> (<I>operator</I> <I>goal</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of bindings that operator's effects can be unified against goal.
+   Note that effects and goal may include object variables.
+   Any variable in effects must be different from any variables in goal.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Regressive Operation
+</H2>
+ In regressive operation, variables in operator must be partially instantiated, and 
+ new subgoal must be set up.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="regression-operation"><A HREF="../plan\FrwdBkwd.cl"><B>regression-operation</B></A></A> (<I>relevant</I> <I>goal</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>computes the regression, namely instatiates relevant operation in <I>relevant</I> 
+   and <I>goal</I> with bindings in <I>relevant</I>, then makes a union of the operator precond 
+   and the set difference, (<I>goal</I> - <I>operator effects</I>).</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="regress"><A HREF="../plan\FrwdBkwd.cl"><B>regress</B></A></A> (<I>goal</I> <I>add-list</I> <I>del-list</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a union of <I>add-list</I> and set-difference (<I>goal</I> - <I>del-list</I>).</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="remove-relevant-occured"><A HREF="../plan\FrwdBkwd.cl"><B>remove-relevant-occured</B></A></A> (<I>relevant</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>removes similar operators that occured in <I>plan</I>. Note that this function also 
+   removes operators that include variables in parameters and similar exept the variables.</TD>
+</TR></TBODY></TABLE></DIV> 
+<A NAME="plan\STRIPS.cl"><HR>
+<H2>File <A HREF="../plan\STRIPS.cl">plan\STRIPS.cl</A></H2></A>
+<H2> STRIPS Module (Figure 4.4 and Exercise 4.11)
+</H2>
+ All rights on programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<H2> STRIPS
+</H2>
+ In <B>lifted-backward-search</B>, subgoal in regression process is a union of <I>precond</I> and 
+ set-difference of <I>goal</I> and <I>effects</I>, partially instantiated by partially matched 
+ unifier between <I>goal</I> and <I>effects</I>. However, in backward search of STRIPS, subgoal is 
+ taken only from precond of partially instantiated operator that is relevant to goal. 
+<P>
+ There are two main loops in STRIPS. One is a regressive search process that starts at 
+ the given goal and reaches the initial state. In this process, relevant operators are 
+ retrieved, but neither regression of goal nor progression of state happen. The subgoal 
+ is just a partially instantiated precond of relevant operator. This regressive search 
+ process is done by recursive call that involves undeterministic choice of relevants and 
+ backtracking control. 
+<P>
+ Once we find the satisfiable subgoal to the initial state, then another loop is 
+ conducted. This loop explicitely and deterministically controls the progression of state 
+ from the initial state to the given goal with the substitution between the intermediate 
+ state and the subgoal in each iteration. 
+<P>
+ Namely, as we have found the correct answer in search process, and we now have the 
+ initial state (let it be <I>s0</I>) that satisfies the precond of action (<I>a1</I>), so 
+ we can obtain the next state <I>s1</I> by one step progression with <I>a1</I>. Then, we go to 
+ the top of loop with having this <I>s1</I>. Note that <I>s1</I> satisfies precond of <I>a2</I> with 
+ appropriate substitution. Then, we can obtain the next state <I>s2</I> by one step progression
+ with <I>a2</I>. This progressive loop and recursion process is repeated again and again with 
+ having <I>s2</I>, <I>s3</I>, ..., until we reach at the given goal with updated last state. Of course, 
+ the final initial state satisfies the goal, then we obtain completely instantiated answer of 
+ planning. Note that the answer of planning is incrementally instantiated in progressive 
+ iteration.
+<BR>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="strips"><A HREF="../plan\STRIPS.cl"><B>STRIPS</B></A></A> (<I>state</I> <I>goal</I> <I>plan</I>)</U></TD>
+<TD width="155" align="right">[continuable function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>searches relevant operators and returns a list of actions.</TD>
+</TR></TBODY></TABLE></DIV> 
+<A NAME="plan\planspace.cl"><HR>
+<H2>File <A HREF="../plan\planspace.cl">plan\planspace.cl</A></H2></A>
+<H2> Planspace Module (Section 5.2 and 5.3)
+</H2>
+ All rights on programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<H2> Plan
+</H2>
+ A plan in plan space is 4-tuple of partially instantiated operators, a set of partial ordering of operation, 
+ a binding constraint, and a set of causal-links.
+<PRE><CODE>
+ (let ((start (start "empty(k1),empty(k2),at(r1,l3),unloaded(r1),occupied(l3),
+                      in(c1,p1),on(c1,pallet),top(c1,p1),top(pallet,p2)"))
+       (take (action "take(k1,c1,p1,l1)"
+                     :precond "in(c1,p1),empty(k1)"
+                     :effects "holding(k1,c1),~in(c1,p1)"))
+       (move (action "move(r1,l,l1)"
+                     :precond "adjacent(l,l1),at(r1,l),~occupied(l1)"
+                     :effects "at(r1,l1),~at(r1,l),occupied(l1),~occyoued(l)"))
+       (load (action "load(k1,c1,r1,l1)"
+                     :precond "at(r1,l1),holding(k1,c1),unloaded(r1)"
+                     :effects "loaded(r1,c1),empty(r1)"))
+       (finish (finish "in(c1,p2)")))
+   (plan (list start take move load finish)
+         (list (ordering start take) (ordering start move)
+               (ordering take load) (ordering move load) (ordering load finish))
+         +no-bindings+
+         (list (causal-link start take) (causal-link start move)
+               (causal-link take load) (causal-link move load))))
+ --&gt;
+ (plan (start empty(k1) empty(k2) at(r1 l3) unloaded(r1) occupied(l3) in(c1 p1) 
+              on(c1 pallet) top(c1 p1) top(pallet p2))
+       (operator take(k1 c1 p1 l1)
+                 (:precond in(c1 p1) empty(k1))
+                 (:effects holding(k1 c1) ~in(c1 p1)))
+       (operator move(r1 $l l1)
+                 (:precond adjacent($l l1) at(r1 $l) ~occupied(l1))
+                 (:effects at(r1 l1) ~at(r1 $l) occupied(l1) ~occyoued($l)))
+       (operator load(k1 c1 r1 l1)
+                 (:precond at(r1 l1) holding(k1 c1) unloaded(r1))
+                 (:effects loaded(r1 c1) empty(r1)))
+       (finish in(c1 p2))
+       (:orderings (start &lt;&lt; take(k1 c1 p1 l1)) (start &lt;&lt; move(r1 $l l1))
+                   (take(k1 c1 p1 l1) &lt;&lt; load(k1 c1 r1 l1)) 
+                   (move(r1 $l l1) &lt;&lt; load(k1 c1 r1 l1))
+                   (load(k1 c1 r1 l1) &lt;&lt; finish))
+       (:bindings (nil))
+       (:causal-links (start -&gt; take(k1 c1 p1 l1)) (start -&gt; move(r1 $l l1))
+                      (take(k1 c1 p1 l1) -&gt; load(k1 c1 r1 l1)) 
+                      (move(r1 $l l1) -&gt; load(k1 c1 r1 l1))))
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="plan"><A HREF="../plan\planspace.cl"><B>plan</B></A></A> <I>operators</I> <I>orderings</I> <I>bindings</I> <I>causal-links</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-plan"><A HREF="../plan\planspace.cl"><B>print-plan</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints <B>plan</B> like ''(plan operator* (:orderings ordering*) (:bindigns binding*)
+   (:causal-links causal-link*)''</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="plan"><A HREF="../plan\planspace.cl"><B>plan</B></A></A> (<I>operators</I> <I>orderings</I> <I>bindings</I> <I>causal-links</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>reads 4-tuple and makes a plan</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Ordering Constraint
+</H2>
+ An ordering is a pair of predecessor and successor, and it is printed as "(<I>predecessor</I> &lt;&lt; <I>successor</I>)"
+ in this implementation.
+ Each predecessor and successor is a partially instantiated operator called <B>action</B> here and after.
+ A set of orderings makes a partial ordering constraint of actions as a whole.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ordering"><A HREF="../plan\planspace.cl"><B>ordering</B></A></A> <I>predecessor</I> <I>successor</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-ordering"><A HREF="../plan\planspace.cl"><B>print-ordering</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints an ordering like ''(<I>predecessor</I> &lt;&lt; <I>successor</I>)''</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ordering-equal-p"><A HREF="../plan\planspace.cl"><B>ordering-equal-p</B></A></A> (<I>ordering1</I> <I>ordering2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>ordergin1</I> and <I>ordering2</I> is equal.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ordering"><A HREF="../plan\planspace.cl"><B>ordering</B></A></A> (<I>predecessor</I> <I>&optional</I> <I>successor</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes an ordering and returns it. Note that two parameters should be a partially instantiated operation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\planspace.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                        ordering)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+<H2> Ordering Constraint Satisfaction
+</H2>
+<P>
+ If an indirect ordering is entailed from a set of orderings by transitive nature of ordering, 
+ it is called <I>satisfied</I>.
+<PRE><CODE>
+ (setq orderings
+       (let ((start (start "empty(k1),empty(k2),at(r1,l3),unloaded(r1),occupied(l3),
+                            in(c1,p1),on(c1,pallet),top(c1,p1),top(pallet,p2)"))
+             (take (action "take(k1,c1,p1,l1)" :precond "in(c1,p1),empty(k1)" 
+                                               :effects "holding(k1,c1),~in(c1,p1)"))
+             (move (action "move(r1,l3,l1)"
+                           :precond "adjacent(l3,l1),at(r1,l),~occupied(l1)"
+                           :effects "at(r1,l1),~at(r1,l3),occupied(l1),~occyoued(l3)"))
+             (load (action "load(k1,c1,r1,l1)"
+                           :precond "at(r1,l1),holding(k1,c1),unloaded(r1)"
+                           :effects "loaded(r1,c1),empty(r1)"))
+             (finish (finish "in(c1,p2)")))
+         (list (ordering start take) (ordering start move)
+               (ordering take load) (ordering move load) (ordering load finish))))
+ --&gt;
+ ((start &lt;&lt; take(k1 c1 p1 l1)) (start &lt;&lt; move(r1 l3 l1))
+  (take(k1 c1 p1 l1) &lt;&lt; load(k1 c1 r1 l1))
+  (move(r1 l3 l1) &lt;&lt; load(k1 c1 r1 l1)) (load(k1 c1 r1 l1) &lt;&lt; finish))
+
+ (ordering-satisfied-p
+   (ordering (start "empty(k1),empty(k2),at(r1,l3),unloaded(r1),occupied(l3),
+                     in(c1,p1),on(c1,pallet),top(c1,p1),top(pallet,p2)")
+             (finish "in(c1,p2)"))
+   orderings)
+ --&gt; true
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ordering-satisfied-p"><A HREF="../plan\planspace.cl"><B>ordering-satisfied-p</B></A></A> (<I>ordering</I> <I>orderings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>ordering</I> is satisfied by <I>orderings</I>. Note that <I>orderings</I> must be consistent and asyclic.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ If an ordering does not contradict to a set of orderings, namely inverse ordering is not entailed, 
+ it is called <I>consistent</I>.
+ A consistent ordering can be added into the orderings, if you would like.
+<PRE><CODE>
+ (consistent-ordering-p
+   (ordering (action "load(k1,c1,r1,l1)"
+                     :precond "at(r1,l1),holding(k1,c1),unloaded(r1)"
+                     :effects "loaded(r1,c1),empty(r1)")
+             (action "move(r1,l1,l2)" 
+                     :precond "adjacent(l1,l2),at(r1,l1),~occupied(l2)"
+                     :effects "at(r1,l2),~at(r1,l1),occupied(l2),~occyoued(l1)"))
+   orderings)
+ --&gt; true
+ (consistent-ordering-p
+   (ordering (action "load(k1,c1,r1,l1)"
+                     :precond "at(r1,l1),holding(k1,c1),unloaded(r1)"
+                     :effects "loaded(r1,c1),empty(r1)")
+             (action "move(r1,l3,l1)"
+                     :precond "adjacent(l3,l1),at(r1,l),~occupied(l1)"
+                     :effects "at(r1,l1),~at(r1,l3),occupied(l1),~occyoued(l3)"))
+   orderings)
+ --&gt; false
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="consistent-ordering-p"><A HREF="../plan\planspace.cl"><B>consistent-ordering-p</B></A></A> (<I>ordering</I> <I>orderings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>ordering</I> is consistent to <I>orderings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ Sometime we need to retrieve earliest predecessors in orderings
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="earliest-predecessors-in"><A HREF="../plan\planspace.cl"><B>earliest-predecessors-in</B></A></A> (<I>orderings</I> <I>&key</I> <I>test</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns all predecessors that do not appear as successor in <I>orderings</I>.
+   The default of <I>test</I> is equalp.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Causal Link
+</H2>
+ A causal link is a pair of producer and consumer, and it is printed as "(<I>producer</I> -&gt; <I>consumer</I>)" in this implementation.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="causal-link"><A HREF="../plan\planspace.cl"><B>causal-link</B></A></A> <I>producer</I> <I>consumer</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-causal-link"><A HREF="../plan\planspace.cl"><B>print-causal-link</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints a <B>causal-link</B> like ''(<I>producer</I> -&gt; <I>consumer</I>)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="causal-link"><A HREF="../plan\planspace.cl"><B>causal-link</B></A></A> (<I>producer</I> <I>consumer</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a causal-link from <I>producer</I> and <I>consumer</I> and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="causal-link-proposition"><A HREF="../plan\planspace.cl"><B>causal-link-proposition</B></A></A> (<I>link</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns propositions of this <I>link</I>, namely an intersection of producer's effects and 
+   consumer's precond. Note that this returns a list of propositional atoms.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="find-link-related-to"><A HREF="../plan\planspace.cl"><B>find-link-related-to</B></A></A> (<I>proposition</I> <I>links</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a link in <I>links</I> that has <I>proposition</I> as causal link proposition.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Start and Finish
+</H2>
+ In plan state, start operation that has an empty precond and non-empty effects that represent 
+ a given initail state is made, and it is used in plan state space instead of a initial state in state space.
+ Similarly, finish operation that has an empty effects and non-empty precond that represent 
+ a given goal is made, and used in plan state space instead of a goal in state space.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*start*"><A HREF="../plan\planspace.cl"><B>*start*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>holds a start operation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*finish*"><A HREF="../plan\planspace.cl"><B>*finish*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>holds a finish operation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="start"><A HREF="../plan\planspace.cl"><B>start</B></A></A> (<I>initial</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a start operation and store it into *start*. This function returns the start operation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="finish"><A HREF="../plan\planspace.cl"><B>finish</B></A></A> (<I>goal</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a finish operation and store it into *finish*. This function returns the finish operation.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="make-minimal-plan"><A HREF="../plan\planspace.cl"><B>make-minimal-plan</B></A></A> (<I>initial</I> <I>goal</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>This function is used for create a initial plan space that includes the return value of 
+   this function, that is a node composed of start operator and finish operator. 
+   The start operator contains only <I>initial</I> as operator effects, and the finish operator 
+   contains only <I>goal</I> as operator precond.</TD>
+</TR></TBODY></TABLE></DIV> 
+<A NAME="plan\PSP.cl"><HR>
+<H2>File <A HREF="../plan\PSP.cl">plan\PSP.cl</A></H2></A>
+<H2> PSP Module (Figure 5.6)
+</H2>
+ All rights on these programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<H2> PSP (Figure 5.6)
+</H2>
+ PSP is an acronym of Plan Space Planning.
+ PSP incrementally refines an incomplete plan starting at a trivial simple plan 
+ (<B>start</B> &lt;&lt; <B>finish</B>), in which the <B>start</B> action includes a given initial state 
+ in effects, and the <B>finish</B> action includes a given goal in precond. This algorithm 
+ determistically choose a <I>flaw</I> in plan and underterministically choose a <I>resolver</I> 
+ of the <I>flaw</I> chosen, then refines <B>plan</B> using the <I>resolver</I> chosen.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="psp"><A HREF="../plan\PSP.cl"><B>PSP</B></A></A> (<I>plan</I>)</U></TD>
+<TD width="155" align="right">[continuable function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves flaws from <I>plan</I>, picks one flaw, creates a resolver for flaw, 
+         underministically choose one resolver, then recursively calls PSP with refined 
+         <I>plan</I> by the resolver. If there is no resolver, the backtrack occures and another 
+         resolver is chosen. If there is no flaw in <I>plan</I>, it means <I>plan</I> is complete, so 
+         returns <I>plan</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Flaws
+</H2>
+ Flaws are a union set of <I>open goal</I>s and <I>threat</I>s in plan.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="closer-flaw-up-to"><A HREF="../plan\PSP.cl"><B>closer-flaw-up-to</B></A></A> (<I>operator</I> <I>proposition1</I> <I>proposition2</I> <I>links</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>proposition1</I> is closer or not far than <I>link2</I> to <I>operation</I> in <I>links</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="%closer-flaw-up-to"><A HREF="../plan\PSP.cl"><B>%closer-flaw-up-to</B></A></A> (<I>operator</I> <I>link1</I> <I>link2</I> <I>links</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if causal-link <I>link1</I> is closer or not far than <I>link2</I> to <I>operation</I> <I>links</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Open Goals
+</H2>
+ An atom in operator precond that appears in <B>causal-link-proposition</B>s in plan is 
+ called <I>supported</I>. It means such an atom holds if the <B>causal-link-producer</B> action 
+ is established. Any <I>unsupported</I> atom in operator preconds in plan is called <B>open</B>.
+ <I>Open</I> atoms in operator preconds in plan are called <I>open goals</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="collect-open-goals"><A HREF="../plan\PSP.cl"><B>collect-open-goals</B></A></A> (<I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collect unsupported atoms in precond of every operator in <I>plan</I> and 
+   returns a set of them.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="find-consumer-action-related-to"><A HREF="../plan\PSP.cl"><B>find-consumer-action-related-to</B></A></A> (<I>flaw</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>finds an action in <I>plan</I> of which precond includes <I>flaw</I> and returns it.
+   This function is used in <B>collect-resolvers</B> in order to find an action 
+   that resolves <I>flaw</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="find-effect-related-to"><A HREF="../plan\PSP.cl"><B>find-effect-related-to</B></A></A> (<I>flaw</I> <I>action</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>finds an effect in effects of <I>action</I> that is unifiable to <I>flaw</I> and returns it.
+   This function is used in <B>collect-resolvers</B> in order to make an action resolvers
+   to <I>flaw</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Threats
+</H2>
+ A threat is a special action that possiblly holds special effects such as
+<BR>
+<UL>
+<LI>a threat has a negative effect that is possiblly inconsistent with a proposition of some causal-link in plan, and
+<LI>the threat may interleave the producer and consumer of the above causal-link in orderings in plan, and
+<LI>a binding between the negative effect of the threat and the proposition of the causal-link are consistent with bindings in plan.
+</UL>
+<BR>
+ For example, ''move(<I>r</I>,<I>l</I>,<I>m</I>)'' where <I>r</I> is a robot, <I>l</I> is a location at which <I>r</I> is located, 
+ and <I>m</I> is a destination of moving, may be a threat for a causal link ''(move(r1,<I>n</I>,l1) -&gt; load(k1,c1,r1,l1)'', 
+ because ''move(<I>r</I>,<I>l</I>,<I>m</I>)'' possiblly beats the effect ''at(r1,l1)'' of the movement with 
+ a binding ''<I>n</I>/l1'' if it interlieves both actions of the causal link.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="threat-action-p"><A HREF="../plan\PSP.cl"><B>threat-action-p</B></A></A> (<I>action</I> <I>link</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>action</I> is a threat against <I>link</I> in <I>plan</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="inconsistent-effects-p"><A HREF="../plan\PSP.cl"><B>inconsistent-effects-p</B></A></A> (<I>negative-effects</I> <I>proposition</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>negative-effects</I> and positive <I>proposition</I> unifiablly intersect 
+   with ignoring the truth values.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="consistent-unifiable-p"><A HREF="../plan\PSP.cl"><B>consistent-unifiable-p</B></A></A> (<I>proposition</I> <I>negative-precond</I> <I>plan-bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>computes a binding between positive <I>proposition</I> and <I>negative-precond</I>, 
+   and returns it if the possible binding is consistent to <I>plan-bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compute-consistent-bindings"><A HREF="../plan\PSP.cl"><B>compute-consistent-bindings</B></A></A> (<I>state1</I> <I>state2</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="consistent-bindings-p"><A HREF="../plan\PSP.cl"><B>consistent-bindings-p</B></A></A> (<I>bindings1</I> <I>bindings2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>bindings1</I> and <I>bindings2</I> is not inconsistent.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="inconsistent-bindings-p"><A HREF="../plan\PSP.cl"><B>inconsistent-bindings-p</B></A></A> (<I>bindings1</I> <I>bindings2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>bindings1</I> or <I>bindings2</I> includes some binding that results different 
+   substitution when <I>bindings1</I> and <I>bindings2</I> are merged.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="consistent-bindings-in-plan-p"><A HREF="../plan\PSP.cl"><B>consistent-bindings-in-plan-p</B></A></A> (<I>bindings</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>checks whether <I>bindings</I> causes inconsistent effects of operators in <I>plan</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ If you like, you can create an instance of <I>threat</I>, which consists of 
+ <B>threat-action</B> and <B>threat-link</B>.
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="threat"><A HREF="../plan\PSP.cl"><B>threat</B></A></A> <I>action</I> <I>link</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="collect-threats"><A HREF="../plan\PSP.cl"><B>collect-threats</B></A></A> (<I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects all threat actions in <I>plan</I> for every causal links in <I>plan</I>, 
+   then, makes threats from the collection of actions with the related link.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Resolvers
+</H2>
+ There are several kinds of resolvers for flaws according to the type of flaw. In the following sentences, 
+ ''consistent'' means consistent to orderings or bindings in plan. 
+ As resolvers for threats,
+<BR>
+<UL>
+<LI>promotion: a consistent ordering composed of flaw's threat action and a producer of flaw's threat link
+<LI>demotion: a consistent ordering composed of flaw's threat action and a consumer of flaw's threat link
+<LI>separation: a consistent binding that lets a possively unifiable pair of a negative effect and a link proposition nonunifiable.
+</UL>
+<BR>
+ As resolvers for open goals,
+<BR>
+<UL>
+<LI>a causal link in plan that provides the open goal as an effect of producer of the link
+<LI>a new operator in system that does not appear in plan, but it provides the open goal as an effect of the operator
+</UL>
+<BR>
+ Note that a new operator brings two new orderings ''(start &lt;&lt; <I>new operator</I>)''
+ and ''(<I>new operator</I> &lt;&lt; <I>action that provides open goal</I>)'', 
+ a new causal-link ''(<I>new operator</I> -&gt; <I>action that provides open goal</I>)'', and 
+ the new bindings between both.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="collect-resolvers"><A HREF="../plan\PSP.cl"><B>collect-resolvers</B></A></A> (<I>flaw</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects all resolvers for <I>flaw</I> according to the type of flaw, threat or open goal, 
+   and returns them.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="retrieve-causal-link-resolvers"><A HREF="../plan\PSP.cl"><B>retrieve-causal-link-resolvers</B></A></A> (<I>flaw</I> <I>causal-links</I> <I>plan-orderings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>finds some pair of producer and consumer of a link from <I>causal-links</I> such that 
+   the producer includes an effect unifiable to <I>flaw</I> and the pair as ordering is 
+   new and consistent to <I>plan-orderings</I>. This function returns a list of 
+   the link, the ordering, and new bindings as a result of unification between 
+   <I>flaw</I> and the unifiable effect.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unifiable-link-p-to"><A HREF="../plan\PSP.cl"><B>unifiable-link-p-to</B></A></A> (<I>flaw</I> <I>link</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>If <I>flaw</I> is unifiable to positive effects of producer of <I>link</I>, and 
+   <I>flaw</I> is unifiable to positive precond of consumer of <I>link</I>, and
+   <I>flaw</I> is not unified to negative effects of consumer of <I>link</I>, then
+   the <I>link</I> may be a resolver of <I>flaw</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="retrieve-action-resolvers"><A HREF="../plan\PSP.cl"><B>retrieve-action-resolvers</B></A></A> (<I>flaw</I> <I>operators</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>finds some operator in <I>operators</I> of which effects include an effect that is unifiable 
+   to <I>flaw</I>. This function returns a list of the resolving action, an ordering such that 
+   the action to successive action in <I>plan</I> through the relation of <I>flaw</I>, and bindings 
+   obtained by unification between the effect and <I>flaw</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="unsatisfiable-resolver-p"><A HREF="../plan\PSP.cl"><B>unsatisfiable-resolver-p</B></A></A> (<I>resolver</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>If <I>resolver</I> is an action and its effects is unsatisfiable such as holding ''A ^ ~A'', returns true.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Refine
+</H2>
+ If we have a resolver, we can apply it to resolve the flaw. For a threat, we apply 
+ a promotion, or a demotion, or a separation. For an open goal, we do an action to 
+ meet the goal (precond). In this implementation, any redundant ordering in plan orderings is 
+ removed when a new ordering is added. 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="refine"><A HREF="../plan\PSP.cl"><B>refine</B></A></A> (<I>flaw</I> <I>resolver</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compute-safety-ordering"><A HREF="../plan\PSP.cl"><B>compute-safety-ordering</B></A></A> (<I>predecessor</I> <I>successor</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="add-action"><A HREF="../plan\PSP.cl"><B>add-action</B></A></A> (<I>action</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>adds <I>action</I> into operators in <I>plan</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="add-ordering"><A HREF="../plan\PSP.cl"><B>add-ordering</B></A></A> (<I>ordering</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>adds <I>ordering</I> into orderings in <I>plan</I>, then removes redundants in orderings, 
+   and returns non-redundant orderings. Note that this addition must not involve 
+   inconsistency.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="remove-redundant-orderings"><A HREF="../plan\PSP.cl"><B>remove-redundant-orderings</B></A></A> (<I>orderings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>This function picks up every ordering in <I>orderings</I>, and if it is entailed the other 
+   orderings, then remove it, finally returns non-redundant set of orderings.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="%remove-redundant-orderings"><A HREF="../plan\PSP.cl"><B>%remove-redundant-orderings</B></A></A> (<I>pos</I> <I>orderings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="add-bindings"><A HREF="../plan\PSP.cl"><B>add-bindings</B></A></A> (<I>bindings</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="add-causal-link"><A HREF="../plan\PSP.cl"><B>add-causal-link</B></A></A> (<I>causal-link</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<A NAME="plan\STN.cl"><HR>
+<H2>File <A HREF="../plan\STN.cl">plan\STN.cl</A></H2></A>
+<H2> STN (Simple Task Network) Planning Module (Chapter 11)
+</H2>
+ All rights on programs are reserved by Seiji Koide. 
+<BR>
+ Copyrights (c), 2008, Seiji Koide
+<H2> Task
+</H2>
+ A <B>task</B> looks like <B>ope-name</B> at a glance, as a <B>task</B> is composed of task <I>symbol</I> and 
+ <I>terms</I>. However the <B>task</B> is an abstract concept of <B>operator</B>s. It stands for a singleton or chunk of 
+ operation. It is a concept very close to the workflow.
+<P>
+ Note that syntactically task name cannot include characters, +, -, /, &gt;, &lt;, =, etc. in string logical 
+ expression for infix notation. Therefore, when you input a task name as string, please avoid to type these 
+ characters such as "transfer_two_containers" instead of "transfer-two-containers".
+<P>
+ See the following example to make a task named "setup".
+<PRE><CODE>
+   Ex. (task "setup(c,r)")  --&gt; setup($c $r)
+</CODE></PRE><P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="task"><A HREF="../plan\STN.cl"><B>task</B></A></A> <I>symbol</I> <I>terms</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-task"><A HREF="../plan\STN.cl"><B>print-task</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints <B>task</B> like ''setup($c $r)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="set-task-terms"><A HREF="../plan\STN.cl"><B>set-task-terms</B></A></A> (<I>x</I> <I>val</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>sets <I>val</I> to task terms of <I>x</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="task-equalp"><A HREF="../plan\STN.cl"><B>task-equalp</B></A></A> (<I>task1</I> <I>task2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>task1</I> and <I>task2</I> are equal as task.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="task"><A HREF="../plan\STN.cl"><B>task</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD><I>exp</I> is either an instance of task, infix notation as string, or prefix notation as S-expression.
+   This function creates an instance of task and returns it, if <I>exp</I> is a string or list.
+   If <I>exp</I> is an instance of task, simply returns it. In any case, the return value is set at 
+   special var <I>+task+</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> For Unification of Task
+</H2>
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:task"><A HREF="../plan\STN.cl"><B>compound-unify?</B></A></A> (<I>(x
+                                                                                                       task)</I> <I>(y
+                                                                                                                     task)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify:task"><A HREF="../plan\STN.cl"><B>compound-unify</B></A></A> (<I>(x
+                                                                                                     task)</I> <I>(y
+                                                                                                                   task)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  task)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variables-in:task"><A HREF="../plan\STN.cl"><B>variables-in</B></A></A> (<I>(x
+                                                                                                 task)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+<H2> Method
+</H2>
+ A <B>method</B> in HTN describes how a task can be performed by subtasks and it is comprised of four tuple 
+ &lt;<I>meth-name, task, subtasks, constr</I>&gt;. 
+<BR>
+<UL>
+<LI><B>meth-name</B> is similar to <B>op-name</B>, as it is composed of <I>symbol</I> and <I>parms</I>.
+<LI><B>task</B> is a relevant task to this <B>method</B>.
+<LI><I>subtasks</I> is a list of subtasks but the order of performance is governed by the ordering constraint in <I>constr</I>.
+<LI><I>constr</I> means constraints among <I>subtasks</I>.
+</UL>
+<BR>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="meth-name"><A HREF="../plan\STN.cl"><B>meth-name</B></A></A> <I>symbol</I> <I>parms</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-meth-name"><A HREF="../plan\STN.cl"><B>print-meth-name</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints <B>meth-name</B> like ''do_setup($c $r)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="meth-name"><A HREF="../plan\STN.cl"><B>meth-name</B></A></A> (<I>exp</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes an instance of <B>meth-name</B> from <I>exp</I> and returns it.
+   If <I>exp</I> is a string, it should be in infix notation like ''do_setup(c,r)'', otherwise it should be 
+   a list in prefix notation like ''(do_setup $c $r)''.
+   Note that a single character in string turns out an object variable with its name in logics.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="method"><A HREF="../plan\STN.cl"><B>method</B></A></A> <I>name</I> <I>comment</I> <I>task</I> <I>subtasks</I> <I>constr</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-method"><A HREF="../plan\STN.cl"><B>print-method</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints <B>meth-name</B> like ''(method do_setup($c $r) setup($c $r) ...)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="method-symbol"><A HREF="../plan\STN.cl"><B>method-symbol</B></A></A> (<I>method</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a name symbol of <I>method</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="method-variables"><A HREF="../plan\STN.cl"><B>method-variables</B></A></A> (<I>method</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns variables of method name of <I>method</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="set-method-variables"><A HREF="../plan\STN.cl"><B>set-method-variables</B></A></A> (<I>method</I> <I>val</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>sets <I>val</I> to variables of method name of <I>method</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ All methods in HTN system should be stored in a global var <B>*methods*</B>. Macro <B>define-method</B> 
+ do it. To denote the constraint of method, three keywords, :precond, :orderings, :effects, 
+ or one keyword :contr are used. See the following examples.
+<PRE><CODE>
+ (define-method "do_setup(c,d,k,l,p,r)"
+     "method to prepare for moving a container"
+   :task "setup(c,r)"
+   :subtasks "take(k,l,c,d,p),load(k,l,c,r)"
+   :precond "on(c)=d,attached(p)=l,in(c)=p,belong(k)=l,at(r)=l,empty(k),
+             unloaded(r),top(c)=p")
+
+ (define-method "do_setup(c,d,k,l,p,r)"
+     "method to prepare for moving a container"
+   :task "setup(c,r)"
+   :subtasks "take(k,l,c,d,p),load(k,l,c,r)"
+   :constr ":u1&lt;&lt;:u2, 
+            before({:u1},on(c)=d), before({:u1},attached(p)=l),
+            before({:u1},in(c)=p), before({:u1},belong(k)=l),
+            before({:u1},at(r)=l), before({:u1},empty(k)),
+            before({:u1},unloaded(r)), before({:u1},top(c)=p)")
+</CODE></PRE><P>
+ Where :u1 stands for the first task in the subtask list. Similarly :u2 stands for the second 
+ task in the subtask list. The form ":u1&lt;&lt;:u2" in :constr value means a partial ordering.
+ Use :u0 to refer the task itself rather than one of subtasks.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*methods*"><A HREF="../plan\STN.cl"><B>*methods*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>A global var in which defined methods are stored.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="define-method"><A HREF="../plan\STN.cl"><B>define-method</B></A></A> (<I>meth-name</I> <I>&rest</I> <I>initargs</I>)</U></TD>
+<TD width="60" align="right">[macro]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>defines a method and pushes the result into <B>*methods*</B>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="method"><A HREF="../plan\STN.cl"><B>method</B></A></A> (<I>meth-name</I> <I>&key</I> <I>task</I> <I>subtasks</I> <I>constr</I> <I>precond</I> <I>orderings</I> <I>effects</I> <I>comment</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a method in HTN and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Unification for Method
+</H2>
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:meth-name"><A HREF="../plan\STN.cl"><B>compound-unify?</B></A></A> (<I>(x
+                                                                                                            meth-name)</I> <I>(y
+                                                                                                                               meth-name)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify:meth-name"><A HREF="../plan\STN.cl"><B>compound-unify</B></A></A> (<I>(x
+                                                                                                          meth-name)</I> <I>(y
+                                                                                                                             meth-name)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify?:method"><A HREF="../plan\STN.cl"><B>compound-unify?</B></A></A> (<I>(x
+                                                                                                         method)</I> <I>(y
+                                                                                                                         method)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="compound-unify:method"><A HREF="../plan\STN.cl"><B>compound-unify</B></A></A> (<I>(x
+                                                                                                       method)</I> <I>(y
+                                                                                                                       method)</I> <I>bindings</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  meth-name)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  method)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="variables-in:method"><A HREF="../plan\STN.cl"><B>variables-in</B></A></A> (<I>(x
+                                                                                                   method)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+<H2> Other Utilities for Task and Subtasks
+</H2>
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="make-subtasks1"><A HREF="../plan\STN.cl"><B>make-subtasks1</B></A></A> (<I>subtasks</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns subtasks which are made from <I>subtasks</I>. <I>subtasks</I> is a list of tasks in S-exression, or 
+   a sequence of subtasks as string in infix notation. This function sets the results to special var <I>+subtasks+</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="replace-task-in-orderings"><A HREF="../plan\STN.cl"><B>replace-task-in-orderings</B></A></A> (<I>orderings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>replace task-indicators :u<I>n</I> in <I>orderings</I> with corresponding tasks.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="replace-task-in-precedence-ordering"><A HREF="../plan\STN.cl"><B>replace-task-in-precedence-ordering</B></A></A> (<I>ordering</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>this is used in replace-task-in-orderings.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="replace-task-in-precedence-consts"><A HREF="../plan\STN.cl"><B>replace-task-in-precedence-consts</B></A></A> (<I>consts</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>replace task-indicators :u<I>n</I> in <I>consts</I> with corresponding tasks.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="replace-task-in-precedence-const"><A HREF="../plan\STN.cl"><B>replace-task-in-precedence-const</B></A></A> (<I>const</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>this is used in replace-task-in-precedence-consts.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="%task-of"><A HREF="../plan\STN.cl"><B>%task-of</B></A></A> (<I>var</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns eq-subtasks from parameters of task-indicator :u<I>n</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="make-constr1"><A HREF="../plan\STN.cl"><B>make-constr1</B></A></A> (<I>forms</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a constraint from <I>forms</I> and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="%make-constr1"><A HREF="../plan\STN.cl"><B>%make-constr1</B></A></A> (<I>form</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>this is used in make-constr1.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Constraints
+</H2>
+<P>
+ The constraint type is devided into three sub types, i.e., <I>before-constraint</I>, <I>after-constraint</I>, and 
+ <I>precedence-constraint</I>. The <I>before-constraint</I> denotes a precondition that should be satisfied before the 
+ performance of a task, and the <I>after-constraint</I> denotes a post condition that should be established after 
+ the performance of a task. The <I>precedence-constraint</I> denotes partial orderings among subtask on the performance.
+<P>
+ The constraint set is a list of constraints, namely, a list of instances of 
+ <I>before-constraint</I>, <I>after-constraint</I>, and <I>precedence-constraint</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="constraint"><A HREF="../plan\STN.cl"><B>constraint</B></A></A> <I>set</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-constraint"><A HREF="../plan\STN.cl"><B>print-constraint</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>prints out <B>constraint</B> such as ''(constraint ...)''.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="constraint"><A HREF="../plan\STN.cl"><B>constraint</B></A></A> (<I>set</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>makes a constraint and returns it.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ The following is a substitution method for constraint.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  constraint)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+ <I>before-constraint</I>, <I>after-constraint</I>, and <I>precedence-constraint</I> is defined as structure.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="before-const"><A HREF="../plan\STN.cl"><B>before-const</B></A></A> <I>task</I> <I>const</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="after-const"><A HREF="../plan\STN.cl"><B>after-const</B></A></A> <I>task</I> <I>const</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="precedence-const"><A HREF="../plan\STN.cl"><B>precedence-const</B></A></A> <I>precedence</I> <I>task</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-before-const"><A HREF="../plan\STN.cl"><B>print-before-const</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-after-const"><A HREF="../plan\STN.cl"><B>print-after-const</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="print-precedence-const"><A HREF="../plan\STN.cl"><B>print-precedence-const</B></A></A> (<I>x</I> <I>stream</I> <I>depth</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+ The followings are substitution methods for each constraint.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  before-const)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  after-const)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="subst-bindings:t"><A HREF="../plan\STN.cl"><B>subst-bindings</B></A></A> (<I>bindings</I> <I>(x
+                                                                                                                  precedence-const)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P>
+ The precedence constraints are transformed into normal orderings. Function <B>constraint-orderings</B>
+ generates a list of orderings from precedence constraint in <I>const</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="constraint-orderings"><A HREF="../plan\STN.cl"><B>constraint-orderings</B></A></A> (<I>const</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects precedence constraints from <I>const</I> and returns a set of task orderings.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ The before constraints are transformed into normal precond constraint. Function <B>constraint-precond</B>
+ generates precond from before-constraits in <I>const</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="constraint-precond"><A HREF="../plan\STN.cl"><B>constraint-precond</B></A></A> (<I>const</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects before constraints from <I>const</I> and returns a set of precond.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ The after constraints are transformed into normal effects. Function <B>constraint-effects</B>
+ generates effects from after-constraints in <I>const</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="constraint-effects"><A HREF="../plan\STN.cl"><B>constraint-effects</B></A></A> (<I>const</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects after constraints from <I>const</I> and returns a set of effects.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ Syntax of before constraint looks like allowing to specify one constraint for :u1 and another constraint for another :u2, 
+ and so on. However, actually it is not permitted in this implementation. You can only specify either :u0 (designates 
+ before constrant for task itself) or :u1 (designates the first subtask in subtask list).
+ Such implemental restriction is the same for after constraint. You can specify either :u0 or the last task-indicator 
+ in after constraint.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="task-orderings-in"><A HREF="../plan\STN.cl"><B>task-orderings-in</B></A></A> (<I>method</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects precedence constraints from <I>method</I> and returns a set of task orderings.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="method-precond"><A HREF="../plan\STN.cl"><B>method-precond</B></A></A> (<I>method</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects before constraints from <I>method</I> and returns a set of precond.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="method-effects"><A HREF="../plan\STN.cl"><B>method-effects</B></A></A> (<I>method</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>collects after constraints from <I>method</I> and returns a set of effects.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ground-p:method"><A HREF="../plan\STN.cl"><B>ground-p</B></A></A> (<I>(x
+                                                                                           method)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if method precond in <I>x</I> does not include any variable.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> A Node in Task Network
+</H2>
+<P>
+ A task can turn out a node in task network. In other words, word "node" is synonymous to "task" 
+ in the context of task network. In this implementation, a type of node is implemented as structure 
+ that has only task slot. 
+<P>
+ You should use function 'node-task' for retrieving a task from a node instance. 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="node"><A HREF="../plan\STN.cl"><B>node</B></A></A> <I>task</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="node-equalp"><A HREF="../plan\STN.cl"><B>node-equalp</B></A></A> (<I>node1</I> <I>node2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if the task of <I>node1</I> is equal to the task of <I>node2</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Task Network
+</H2>
+ A task network in HTN is composed of nodes and edges.
+ Nodes in network is a set of tasks, and edges is a set of partial orderings between nodes as node type
+ rather than task type.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="network"><A HREF="../plan\STN.cl"><B>network</B></A></A> <I>nodes</I> <I>edges</I></U></TD>
+<TD width="45" align="right">[type]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="edge-equal-p"><A HREF="../plan\STN.cl"><B>edge-equal-p</B></A></A> (<I>edge1</I> <I>edge2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>edge1</I> is equal to <I>edge2</I> as node ordering.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ The minimal set of task network is generated by function <B>network-of</B> from one method. 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="network-of"><A HREF="../plan\STN.cl"><B>network-of</B></A></A> (<I>method</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>generates and returns the minimal set of network from <I>method</I>.
+   Its nodes comprise of subtasks of <I>method</I> and its edges are 
+   generated from orderings of subtasks in <I>method</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ Initially, you may need to find <I>open node</I>, namely the node that has no predecessor in the network.
+<P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="no-predecessor-p"><A HREF="../plan\STN.cl"><B>no-predecessor-p</B></A></A> (<I>node</I> <I>network</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if there is no occurence of <I>node</I> as ordering successor in <I>network</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="collect-open-nodes-in"><A HREF="../plan\STN.cl"><B>collect-open-nodes-in</B></A></A> (<I>network</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a set of <I>open node</I>s, which are no appearance as successor node in orderings of <I>network</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Relevant task and Operator/Method
+</H2>
+<P>
+ In HTN task planning, if a task symbol is same as an operator symbol, the operator 
+ is called relevant to the task. The terms of task is usually instantiated, then the 
+ task must be unifiable to the operator in some environment.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant-operator-p"><A HREF="../plan\STN.cl"><B>relevant-operator-p</B></A></A> (<I>task</I> <I>operator</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>task</I> and the task in <I>operator</I> is unifiable with <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+ If a task symbol is same as a task symbol in a method and 
+ both terms are unifiable, then the method is called relevant to the task.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant-method-p"><A HREF="../plan\STN.cl"><B>relevant-method-p</B></A></A> (<I>task</I> <I>method</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>task</I> and the task in <I>method</I> is unifiable with <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant-operator-of"><A HREF="../plan\STN.cl"><B>relevant-operator-of</B></A></A> (<I>task</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves a relevant operator to <I>task</I> from operators defined in system.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant-method-of"><A HREF="../plan\STN.cl"><B>relevant-method-of</B></A></A> (<I>task</I> <I>&optional</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>retrieves a relevant method to <I>task</I> from methods defined in system.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Primitive Task
+</H2>
+<P>
+ A task that has same task symbol as an operator name symbol is called <I>primitive</I>. 
+ A task that is relevant to a method is usally called <I>non-primitive</I> or <I>composite-task</I>. However, 
+ if the task in a method is empty, we call the method primitive. It is illegal that
+ a method has a primitive task in task slot, but any method can have primitive or 
+ non-primitive tasks in subtasks slot. 
+ If a node task in network is primitive, then the node is primitive.
+ If every node in network is primitive, then the network is called primitive.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="primitive-p"><A HREF="../plan\STN.cl"><B>primitive-p</B></A></A> (<I>x</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if <I>x</I> is a primitive task, method, node, or network.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Decomposition of Composite Task (page 235, Definition 11.5)
+</H2>
+<P>
+ Given a node <I>u</I> and a method <I>m</I> that is relevant to the <I>u</I>'s task, the node task is decomposed using subtasks 
+ in the method. The procedure of decomposition is a little bit complicated, especially for edges.
+ Let us look up what happens in simple case. 
+<P>
+ Here we have several methods and tasks, task <I>transfer_one_container</I> transfers one container 
+ by setting up a container on a robot, moving it, then finishing it.
+ Setting-up is done by task <I>setup</I> which includes two operator <I>TAKE</I> and <I>LOAD</I>.
+ At first, suppose we have only one node for task <I>transfer_one_container</I> and no edges in the network. 
+ Then, the decomposition and the network evolution is like the followings.
+<PRE><CODE>
+ --------------------------------------       -------------------------------------
+            Method                                        Network
+ --------------------------------------       -------------------------------------
+                                              nodes:{transfer_one_container}
+                                              edges:{ }
+  task:transfer_one_container
+  subtasks:{setup, move, finish}
+  orderings:{setup&lt;&lt;move, move&lt;&lt;finish}
+                                              nodes:{setup}
+                                              edges:{setup&lt;&lt;move, move&lt;&lt;finish}
+ --------------------------------------       -------------------------------------
+</CODE></PRE><P>
+ <I>transfer_one_container</I> is open in the network, namely it has no predecessor, then it is picked up
+ (and deleted from nodes) and its subtasks and the orderings are brought up for discussion. The locally open 
+ tasks among the subtasks with this orderings are newly added to nodes, that is <I>setup</I> here, 
+ and the orderings for subtasks are also added to edges.
+<P>
+ In the next step, globally open task <I>setup</I> in the network is picked up again. Then, the local open task 
+ in <I>setup</I>'s subtasks, that is TAKE, is added into the nodes. An edge that has <I>setup</I> as predecessor is picked up, 
+ then it is replaced with the edge that has an ordering with the closing subtask, namely it does not appear 
+ in any predecessor of the subtask orderings, that is LOAD here, to the successor of picked edge. 
+ The subtasks orderings in method are also added into the edges.
+<PRE><CODE>
+ --------------------------------------       -------------------------------------
+            Method                                        Network
+ --------------------------------------       -------------------------------------
+                                              nodes:{setup}
+                                              edges:{setup&lt;&lt;move, move&lt;&lt;finish}
+  task:setup
+  subtasks:{TAKE, LOAD}
+  orderings:{TAKE&lt;&lt;LOAD}
+                                              nodes:{TAKE}
+                                              edges:{TAKE&lt;&lt;LOAD, LOAD&lt;&lt;move,
+                                                     move&lt;&lt;finish}
+ --------------------------------------       -------------------------------------
+</CODE></PRE><P>
+<P>
+ The procedure is as follows.
+<BR>
+<OL>
+<LI>The unifier between task terms in <I>u</I> and <I>m</I> is computed.
+<LI><I>m</I> is substituted with the unifier.
+<LI>Let U be a set of nodes in network, calculate (U - {<I>u</I>}) and substitute with the unifier above.
+   Here {<I>u</I>} stands for a set of one element <I>u</I>.
+<LI>Let E be a set of edges in network, calculate (E - {<I>e</I>|pred(<I>e</I>)=<I>u</I>}), and substitute with the unifier above,
+   where {<I>e</I>|pred(<I>e</I>)=<I>u</I>} is a subset of E of which predecessor is <I>u</I>. 
+<LI>Collect succ(<I>e</I>|pred(<I>e</I>)=<I>u</I>) from E, and substitute with the unifier above.
+<LI>Let Um be nodes from <I>m</I>'s subtasks, U = union(U - {<I>u</I>}, Um'). Where Um' = ({<I>sub</I>} - {succ(<I>o</I>)}),
+   and {<I>sub</I>} denotes nodes from subtasks of <I>m</I>, and <I>o</I> denotes one of (every) task orderings in <I>m</I>. 
+   Therefore, Um' means a collection of open nodes in subtasks.
+<LI>Let Em be edges from <I>m</I>, E = union(E - {<I>e</I>|pred(<I>e</I>)=<I>u</I>}, Em, {<I>v</I>&lt;&lt;<I>u'</I>|succ(<I>e</I>|pred(<I>e</I>)=<I>u</I>)=<I>u'</I>}).
+   Where Em denotes edges generated from subtask orderings of <I>m</I>.
+   <I>v</I> denotes one of closing subtasks of <I>m</I>, then {<I>v</I>&lt;&lt;<I>u'</I>|succ(<I>e</I>|pred(<I>e</I>)=<I>u</I>)=<I>u'</I>} denotes 
+   the replacement of {<I>u</I>&lt;&lt;<I>u'</I>} to {<I>v</I>&lt;&lt;<I>u'</I>} in decomposition <I>m</I>.
+</OL>
+<BR>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="decompose"><A HREF="../plan\STN.cl"><B>decompose</B></A></A> (<I>node</I> <I>network</I> <I>method</I> <I>binds</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns new network with decomposition of <I>node</I>.
+   <I>method</I> is relevant to this <I>node</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Evolution of Network for Primitive Task
+</H2>
+<P>
+ The algorithm of network evolution for primitive task is much simpler than non-primitive task, because there is 
+ no method and no decomposition. 
+<P>
+ With a global open node <I>u</I> in the network and <B>unifier</B>, 
+<BR>
+<OL>
+<LI>Compute the relevant edges {<I>e</I>|pred(<I>e</I>)=<I>u</I>} from network edges.
+<LI>Compute the unrelevant edges {<I>e</I>|pred(<I>e</I>)/=<I>u</I>} from network edges.
+<LI>Compute the open nodes ({succ(<I>e</I>|pred(<I>e</I>)=<I>u</I>)} - {succ(<I>e</I>|pred(<I>e</I>)/=<I>u</I>)}).
+<LI>Let U be a set of nodes in network, U = substitution with <B>unifier</B> of
+   union(U - {<I>u</I>}, {succ(<I>e</I>|pred(<I>e</I>)=<I>u</I>)} - {succ(<I>e</I>|pred(<I>e</I>)/=<I>u</I>)})
+<LI>Let E be a set of edges in network, E = substitution of {<I>e</I>|pred(<I>e</I>)/=<I>u</I>} with <B>unifier</B>.
+</OL>
+<BR>
+ Note that every node in nodes are open, and the successors of node tasks will be added, 
+ if it will be open, when the predecessors are removed from network. 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="evolve-network"><A HREF="../plan\STN.cl"><B>evolve-network</B></A></A> (<I>node</I> <I>network</I> <I>binds</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a network evolved by doing the task of <I>node</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Ground Task
+</H2>
+<P>
+ A state variable that does not include any variable symbol is called <I>ground</I>.
+ An operator and action that has no variable in its precond is called <I>ground</I>.
+ A method of which precond has no variable is called <I>ground</I>.
+ A task of which relevant method or operator is ground is called <I>ground</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ground-p:task"><A HREF="../plan\STN.cl"><B>ground-p</B></A></A> (<I>(x
+                                                                                         task)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if relevant operator/method to <I>x</I> is ground.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ground-p:node"><A HREF="../plan\STN.cl"><B>ground-p</B></A></A> (<I>(x
+                                                                                         node)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if the node task of <I>x</I> is ground.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="ground-p:network"><A HREF="../plan\STN.cl"><B>ground-p</B></A></A> (<I>(x
+                                                                                            network)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns true if every node in <I>x</I> is ground.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P>
+<H2> Applicability
+</H2>
+<P>
+ If a precond of operator is satisfied by <B>state</B>, it is called <I>applicable</I>.
+ Namely, if every statevar in a precond of an operator can be unified with some statevar in <B>state</B>, 
+ then the operator is called <I>applicable</I> in <B>state</B>.
+ If a precond of method is satisfied by <B>state</B>, the method is called <I>applicable</I>.
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="applicable-p:operator"><A HREF="../plan\STN.cl"><B>applicable-p</B></A></A> (<I>(x
+                                                                                                     operator)</I> <I>state</I> <I>&optional</I> <I>(bindings
+                                                                                                                                                     +no-bindings+)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of new bindings resulted by unification between precond of <I>x</I> 
+   and <I>state</I> with <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="applicable-p:method"><A HREF="../plan\STN.cl"><B>applicable-p</B></A></A> (<I>(x
+                                                                                                   method)</I> <I>state</I> <I>&optional</I> <I>(bindings
+                                                                                                                                                 +no-bindings+)</I>)</U></TD>
+<TD width="65" align="right">[method]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>returns a list of new bindings resulted by unification between precond of <I>x</I> 
+   and <I>state</I> with <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="activate-operator"><A HREF="../plan\STN.cl"><B>activate-operator</B></A></A> (<I>operator</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>instantiates <I>operator</I> with <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="activate-method"><A HREF="../plan\STN.cl"><B>activate-method</B></A></A> (<I>method</I> <I>bindings</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD>instantiates <I>method</I> with <I>bindings</I>.</TD>
+</TR></TBODY></TABLE></DIV> 
+<H2> Lifted-PFD (Parital-order Forward Decomposition) Procedure (Figure 11.9)
+</H2>
+ The procedure of Lifted-PFD in this implementation is as follows.
+<BR>
+ With given parameters <B>state</B>, <I>goal</I>, <I>network</I>, and <B>plan</B>,
+<BR>
+<OL>
+<LI>If <B>state</B> satisfies <I>goal</I> then returns value of <B>plan</B>.
+<LI>If nodes in <I>network</I> is empty returns failure.
+<LI>Otherwise, undeterministically choose one <I>open node</I> in <I>network</I>. If it is primitive then do primitive task
+    procedure (4) else do non-primitive procedure (7).
+<LI>If primitive, getting applicable operators that relevant to the node chosen, and activate them.
+<LI>If there is no active action, then fail, and backtrack is caused.
+<LI>If there are actions (applicable and activated operator), undeterministically chooses one action then
+    progresses the <B>state</B>, evolves the network and recursively calls with accumlated action in <B>plan</B>.
+<LI>If non-primitive, getting applicable methods that relevant to the node chosen, and acctivate them.
+<LI>If there is no active method, then fail, and backtrack is caused.
+<LI>If there are active methods (applicable and activated method), undeterministically choose one method
+    and decompose the task, and recursively calls with new network.
+</OL>
+<BR>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*global-counter*"><A HREF="../plan\STN.cl"><B>*global-counter*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="*global-counter-limit*"><A HREF="../plan\STN.cl"><B>*global-counter-limit*</B></A></A> </U></TD>
+<TD width="67" align="right">[variable]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="lifted-pfd"><A HREF="../plan\STN.cl"><B>Lifted-PFD</B></A></A> (<I>state</I> <I>goal</I> <I>network</I> <I>operators</I> <I>methods</I> <I>plan</I>)</U></TD>
+<TD width="155" align="right">[continuable function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="relevant-method"><A HREF="../plan\STN.cl"><B>relevant-method</B></A></A> (<I>relevant</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="reverse-action-p"><A HREF="../plan\STN.cl"><B>reverse-action-p</B></A></A> (<I>action</I> <I>plan</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<P><TABLE width="100%" cellpadding="0"><TBODY>
+<TR><TD><U><A NAME="negate-state-p"><A HREF="../plan\STN.cl"><B>negate-state-p</B></A></A> (<I>state1</I> <I>state2</I>)</U></TD>
+<TD width="70" align="right">[function]</TD></TR>
+</TBODY></TABLE>
+<DIV align="right"><TABLE width="90%" cellpadding="0"><TBODY><TR>
+<TD></TD>
+</TR></TBODY></TABLE></DIV> <P>
+<HR>
+<TABLE BORDER=4 CELLPADDING=4 CELLSPACING=0><tr>
+<td> <A HREF="http://www-kasm.nii.ac.jp/~koide/planning-en.htm">Planning Home</A>
+<td> <A HREF="../../contact.html">Authors</A>
+<td> <A HREF="overview.html">Lisp Code Overview</A>
+</TABLE>
+</BODY> 
+</HTML>

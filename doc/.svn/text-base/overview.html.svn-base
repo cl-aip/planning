@@ -1,0 +1,63 @@
+<HTML>
+<HEAD>
+<TITLE>Overview of Automated Planning Code</TITLE>
+<!-- Changed by: Seiji Koide, 19-May-2008 -->
+<META http-equiv="Content-Type" content="text/html">
+<META http-equiv="Content-Style-Type" content="text/css">
+<link href="overview.css" rel="stylesheet" type="text/css">
+</HEAD>
+<BODY bgcolor="#ffffff">
+
+<H1>Overview of Automated Planning Code</H1>
+<P>This page serves as the starting point for exploring the online code for
+<I>Automated Planning - Theory and Practice</I> by Malik Ghallab, 
+Dana Nau, and Paolo Traverso.
+
+<P>This program is coded by Seiji Koide, motivated by the fact that there is no real working codes 
+over the Internet on algorithms that are shown in the book. 
+The copyrights of algorithms are reserved by Elsevier Inc., but all rights on programs that embody 
+algorithm are reserved by Seiji Koide.
+
+<P>Several modules around this program are borrowed from two sources, i.e., <I>On Lisp</I> 
+by Paul Graham, and <I>Artificial Intelligence: A Modern Approach</I> by Stuart Russell and Peter Norvig. 
+The document generation system by Norvig, which produces documents accompanied for this page, 
+is also borrowed and tailored by Seiji Koide to these programs. 
+The some of following web pages are automatically and directly generated from Lisp source codes. 
+The copyright notice is written in source codes of each module and appears at the beginning of these document, 
+whereas I really thank Paul Graham, Peter Norvig, and of cource authors of the book Malik Ghallab, Dana Nau, and Paolo Traverso.
+
+<P>You can see:
+
+<UL>
+<LI> The <a href="license.html">Software License Agreement</a> for the code.
+<LI> An <A HREF="install.html">Installation Guide</A>.
+<LI> A <A HREF="user.html">User's Guide</A> to the Lisp code.
+<LI> An <A HREF="entries.html">alphabetical index</A> of all names in the code.
+<LI> The <A HREF="../">Lisp source code</A> itself as a browsable directory.
+<LI> The following subsystems are organized into subdirectories.<P>
+<UL>
+<LI> <A HREF="overview-utils.html">Utilities</A>: 
+Basic functions that are loaded every time, and used by many other planning systems. 
+This module includes callcc file for continuous function implementation from <I>On Lisp</I> 
+and utilities file from <I>AIMA</I>.
+<LI> <A HREF="overview-fol.html">Logic</A>: 
+Code from AIMA Part III: Logic, Inference, and Knowledge Representation, but they are a little bit tailored by author. 
+<LI> <A HREF="overview-plan.html">Planning</A>: 
+Code for <I>Automated Planning - Theory and Practice</I>. This part is the main contribution by author. 
+As you know, there is <A HREF="http://aima.cs.berkeley.edu/lisp/doc/overview-PLANNING.html">no planning part in <I>AIMA</I> Lisp code repository</A>. This module fulfills the 
+lack of program code of <I>AIMA</I>.
+</UL>
+</UL>
+
+<TABLE BORDER=4 CELLPADDING=4 CELLSPACING=0><tr>
+<td> <A HREF="http://www.laas.fr/planning/index.html">Automated Planning Home</A>
+<td> <A HREF="http://www-kasm.nii.ac.jp/~koide/index-en.html">Program Author's Home</A>
+<td> <A HREF="http://aima.cs.berkeley.edu/">AIMA Home Page</A>
+<td> <A HREF="http://aima.cs.berkeley.edu/lisp/doc/overview.html">AIMA Lisp Code</A><BR>
+<td> <A HREF="http://www.paulgraham.com/onlisp.html">On Lisp Home Page</A><BR>
+</TABLE></BODY></HTML>
+
+<p></p>
+
+<hr>
+<i><small> Author: <a href="mailto:SeijiKoide@aol.com?subject=Planning">Seiji Koide</a>.  Copyright (c) 2008 Seiji Koide. May. 2008 </small></i></body></html>

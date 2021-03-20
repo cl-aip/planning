@@ -1,0 +1,26 @@
+<HTML>
+<HEAD>
+<TITLE>Planning Subsystem</TITLE> 
+<META http-equiv="Content-Type" content="text/html">
+<META http-equiv="Content-Style-Type" content="text/css">
+<link href="overview.css" rel="stylesheet" type="text/css">
+</HEAD> 
+<BODY bgcolor="#ffffff"> 
+
+<H1>Automated Planning - Theory and Practice</H1>
+<H2>Planning Subsystem</H2>
+<P>
+The <I>Automated Planning - Theory and Practice</I> by Malik 
+Ghallab, Dana Nau, and Paolo Traverso is a textbook for 
+planning published from Morgan Kaufmann and Elsevier, 2004. 
+<br/>
+This program is coded by Seiji Koide, motivated by no real working codes on 
+algorithms that are shown on the book. 
+<br/>
+The copyrights of algorithms are reserved by Elsevier Inc., but 
+all rights on these programs are reserved by Seiji Koide. 
+
+<LISP>
+
+</BODY> 
+</HTML>
